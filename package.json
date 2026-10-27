@@ -1,0 +1,1 @@
+{"name":"achievex-local","private":true,"scripts":{"dev":"python3 server.py","check":"node --check dist/app.js && node --check dist/admin.js && python3 -m unittest discover -s tests"}}
