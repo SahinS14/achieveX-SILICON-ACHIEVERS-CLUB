@@ -44,3 +44,16 @@ Do not expose this development server publicly. For public deployment, use HTTPS
 ## Design assets
 
 Outfit and Plus Jakarta Sans are stored locally with SIL Open Font License notices. Generated avatars illustrate leaderboard profiles, not actual student photos. Faculty/member photographs and confirmed exam dates are awaited. The achievement cutout was generated with the built-in image tool from the supplied illustration. The interface honours reduced motion.
+
+## Vercel deployment
+
+The repository includes `vercel.json` and `api/index.py` for Vercel's Python Functions. Static assets come from `dist/`. The project can be deployed before database setup: the public leaderboard is empty, and admin writes stay disabled until configured. SQLite is only used locally, never on Vercel.
+
+When ready, run `supabase/schema.sql` and add these **server-side Vercel environment variables**, then redeploy:
+
+- `SUPABASE_URL`
+- `SUPABASE_SECRET_KEY`
+- `ADMIN_PIN` (your chosen six-digit PIN)
+- `SESSION_SECRET` (a long random secret; generate with `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`)
+
+Cloud sessions are signed and checked across function instances, with Secure HttpOnly cookies. Logout clears the browser cookie; signed tokens expire after eight hours. Rotate SESSION_SECRET to revoke all cloud sessions. Login throttling is per function instance; configure durable edge rate limits before a wider admin rollout.

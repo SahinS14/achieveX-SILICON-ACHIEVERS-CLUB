@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "dist",
+  "buildCommand": "",
+  "installCommand": "",
+  "functions": {"api/index.py": {"includeFiles": "server.py"}},
+  "rewrites": [
+    {"source": "/api/:path*", "destination": "/api/index?endpoint=:path*"},
+    {"source": "/admin", "destination": "/admin.html"}
+  ]
+}

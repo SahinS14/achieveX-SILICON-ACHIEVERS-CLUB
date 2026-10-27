@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parent
 for line in (ROOT / '.env').read_text().splitlines() if (ROOT / '.env').exists() else []:
     if '=' in line and not line.lstrip().startswith('#'):
         k, v = line.split('=', 1); os.environ.setdefault(k.strip(), v.strip().strip('"\''))
+CLOUD = os.getenv('VERCEL') == '1'
 URL = os.getenv('SUPABASE_URL', '').rstrip('/')
 KEY = os.getenv('SUPABASE_SECRET_KEY', '')
 PIN_HASH = hashlib.sha256(os.getenv('ADMIN_PIN', '135790').encode()).digest()
@@ -20,6 +21,7 @@ class ValidationError(Exception): pass
 class StorageError(Exception): pass
 
 def connection():
+    if CLOUD: raise StorageError('Connect Supabase in Vercel environment variables to enable storage.')
     DB.parent.mkdir(exist_ok=True)
     c = sqlite3.connect(DB); c.row_factory = sqlite3.Row
     c.execute('create table if not exists participants (sic text primary key, data text not null)')
@@ -83,6 +85,7 @@ def validate(raw):
 
 def total(r,week=5): return round(sum(r.get('week'+str(i)) or 0 for i in range(1,week+1)),2)
 def public_results():
+    if CLOUD and not (URL or KEY): return {'published_week':0,'participants':[], 'setup_pending':True}
     week=get_week(); rows=all_rows(); result=[]
     for r in rows:
         # Personal contact details never appear in this projection.
@@ -123,6 +126,15 @@ class Handler(SimpleHTTPRequestHandler):
         if cookie:self.send_header('Set-Cookie',cookie)
         self.end_headers();self.wfile.write(json.dumps(data).encode())
     def authorized(self):
+        if CLOUD:
+            try:
+                cookie=SimpleCookie(self.headers.get('Cookie',''));token=cookie['ax_admin'].value
+                expires,nonce,signature=token.split('.')
+                secret=os.getenv('SESSION_SECRET','')
+                expected=hmac.new(secret.encode(),(expires+'.'+nonce).encode(),hashlib.sha256).hexdigest()
+                if secret and int(expires)>time.time() and hmac.compare_digest(expected,signature): return token
+            except (KeyError,ValueError): pass
+            return None
         try:
             cookie=SimpleCookie(self.headers.get('Cookie','')); token=cookie['ax_admin'].value
             with LOCK:
@@ -160,6 +172,8 @@ class Handler(SimpleHTTPRequestHandler):
             body=self.read_body()
             if not isinstance(body,dict):raise ValidationError('Expected JSON object.')
             if path=='/api/admin/login':
+                if CLOUD and not (URL and KEY and os.getenv('ADMIN_PIN') and os.getenv('SESSION_SECRET')):
+                    return self.json_response({'error':'Admin setup pending. Configure Supabase, ADMIN_PIN and SESSION_SECRET in Vercel, then redeploy.'},503)
                 ip=self.client_address[0];now=time.time()
                 with LOCK:
                     failed=[t for t in ATTEMPTS.get(ip,[]) if now-t<600];ATTEMPTS[ip]=failed
@@ -167,12 +181,15 @@ class Handler(SimpleHTTPRequestHandler):
                     if not hmac.compare_digest(hashlib.sha256(str(body.get('pin','')).encode()).digest(),PIN_HASH):
                         failed.append(now);return self.json_response({'error':'Incorrect PIN.'},401)
                     ATTEMPTS.pop(ip,None);token=secrets.token_urlsafe(32);SESSIONS[token]=now+28800
-                return self.json_response({'ok':True},cookie=f'ax_admin={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800')
+                    if CLOUD:
+                        payload=str(int(now+28800))+'.'+secrets.token_hex(12)
+                        token=payload+'.'+hmac.new(os.environ['SESSION_SECRET'].encode(),payload.encode(),hashlib.sha256).hexdigest()
+                return self.json_response({'ok':True},cookie=f'ax_admin={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800'+('; Secure' if CLOUD else ''))
             token=self.authorized()
             if not token:return self.json_response({'error':'Session expired. Unlock the panel again.'},401)
             if path=='/api/admin/logout':
                 with LOCK:SESSIONS.pop(token,None)
-                return self.json_response({'ok':True},cookie='ax_admin=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0')
+                return self.json_response({'ok':True},cookie='ax_admin=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0'+('; Secure' if CLOUD else ''))
             if path=='/api/admin/participant':
                 row=validate(body);existing={r['sic'] for r in all_rows()}
                 if not body.get('editing') and row['sic'] in existing:raise ValidationError('This SIC already exists. Use Edit to update it.')
