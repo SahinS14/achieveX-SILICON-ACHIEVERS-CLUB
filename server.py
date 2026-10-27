@@ -128,6 +128,7 @@ def parse_csv(content):
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self,*args,**kwargs): super().__init__(*args,directory=str(ROOT/'dist'),**kwargs)
     def end_headers(self):
+        if not self.path.startswith('/api/'): self.send_header('Cache-Control','no-cache')
         self.send_header('X-Content-Type-Options','nosniff'); self.send_header('Referrer-Policy','same-origin');super().end_headers()
     def json_response(self,data,status=200,cookie=None):
         self.send_response(status);self.send_header('Content-Type','application/json');self.send_header('Cache-Control','no-store')

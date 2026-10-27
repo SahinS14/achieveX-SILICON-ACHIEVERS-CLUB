@@ -3,9 +3,30 @@
   "outputDirectory": "dist",
   "buildCommand": "",
   "installCommand": "",
-  "functions": {"api/index.py": {"includeFiles": "server.py"}},
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "server.py"
+    }
+  },
   "rewrites": [
-    {"source": "/api/:path*", "destination": "/api/index?endpoint=:path*"},
-    {"source": "/admin", "destination": "/admin.html"}
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index?endpoint=:path*"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
   ]
 }

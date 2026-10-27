@@ -35,3 +35,5 @@
 body[data-page="leaderboard"] .achievement-scene{display:none}
 
 .round-dots i,.round-dots i:nth-child(n+4){background:var(--line);opacity:.6}.round-dots i.completed{background:var(--accent)}.round-dots i.current{background:var(--text);opacity:1}
+
+#retry-results{display:inline-flex;margin:12px;padding:11px 18px;min-height:44px;border:1px solid var(--glass-border);background:var(--glass);border-radius:25px;color:var(--accent);font:500 14px Outfit;cursor:pointer}
