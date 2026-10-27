@@ -70,6 +70,15 @@ class Tests(unittest.TestCase):
         self.login()
         for bad in (-1,6,2.5,True):self.assertEqual(self.call('/api/admin/settings',{'published_week':bad})[0],400)
         self.assertEqual(self.call('/api/admin/settings',{'published_week':5})[0],200)
+    def test_delete_requires_auth_and_confirmation(self):
+        row=app.validate(student());app.save_rows([row])
+        self.assertEqual(self.call('/api/admin/delete',{'sic':row['sic'],'confirm':True})[0],401)
+        self.login()
+        self.assertEqual(self.call('/api/admin/delete',{'sic':row['sic']})[0],400)
+        self.assertEqual(len(app.all_rows()),1)
+        self.assertEqual(self.call('/api/admin/delete',{'sic':row['sic'],'confirm':True})[0],200)
+        self.assertEqual(len(app.all_rows()),0)
+        self.assertEqual(self.call('/api/admin/delete',{'sic':row['sic'],'confirm':True})[0],404)
     def test_csv_duplicate(self):
         csv='full_name,sic,email,contact,year,branch,track\nA,24beca53,a@silicon.ac.in,9876543210,3,CSE,cs\nB,24beca53,b@silicon.ac.in,9876543210,3,CSE,cs\n'
         with self.assertRaises(app.ValidationError):app.parse_csv(csv)

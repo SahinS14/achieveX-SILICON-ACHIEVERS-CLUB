@@ -54,6 +54,14 @@ def save_rows(rows):
     if URL or KEY: remote('rpc/import_participants', 'POST', {'records':rows}); return
     with LOCK, connection() as c:
         c.executemany('insert into participants values (?,?) on conflict(sic) do update set data=excluded.data', [(r['sic'],json.dumps(r)) for r in rows])
+def delete_row(sic):
+    if not re.fullmatch(r'[a-z0-9]{5,24}',sic): raise ValidationError('Invalid SIC.')
+    if URL or KEY:
+        deleted=remote('participants?sic=eq.'+sic,'DELETE')
+        return bool(deleted)
+    with LOCK, connection() as c:
+        return c.execute('delete from participants where sic=?',(sic,)).rowcount>0
+
 def set_week(week):
     if URL or KEY: remote('competition_settings?id=eq.1','PATCH',{'published_week':week}); return
     with connection() as c: c.execute('update settings set published_week=? where id=1',(week,))
@@ -194,6 +202,11 @@ class Handler(SimpleHTTPRequestHandler):
                 row=validate(body);existing={r['sic'] for r in all_rows()}
                 if not body.get('editing') and row['sic'] in existing:raise ValidationError('This SIC already exists. Use Edit to update it.')
                 save_rows([row]);return self.json_response({'ok':True,'total':total(row)})
+            if path=='/api/admin/delete':
+                sic=str(body.get('sic','')).strip().lower()
+                if body.get('confirm') is not True: raise ValidationError('Confirm participant deletion.')
+                if not delete_row(sic): return self.json_response({'error':'Participant no longer exists.'},404)
+                return self.json_response({'ok':True})
             if path=='/api/admin/import':
                 rows=parse_csv(body.get('csv'));existing={r['sic'] for r in all_rows()};updates=sum(r['sic'] in existing for r in rows)
                 if body.get('commit') is True:save_rows(rows)
