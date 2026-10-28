@@ -7,7 +7,7 @@ function avatar(p){const n=p.index%16;return `<span class="avatar-art" style="ba
 function rankBadge(rank){
  const tier=rank===1?['apex','Laureate','♛']:rank===2?['vanguard','Vanguard','✧']:rank===3?['luminary','Luminary','✦']:rank<=10?['elite','Elite','✹']:rank<=25?['trail','Trailblazer','↗']:rank<=50?['path','Pathfinder','◈']:['challenger','Challenger','◎'];
  const range=rank<=3?'Rank '+rank:rank<=10?'Ranks 4–10':rank<=25?'Ranks 11–25':rank<=50?'Ranks 26–50':'Ranks 51+';
- return `<span class="rank-badge badge-${tier[0]}" title="${range} in this category and scoring period. A leaderboard badge, not an official prize."><span class="badge-shield" aria-hidden="true">${tier[2]}</span><span>${tier[1]}</span></span>`;
+ return `<span class="rank-badge badge-${tier[0]}" title="${range} in this category and scoring period."><span class="badge-shield" aria-hidden="true">${tier[2]}</span><span>${tier[1]}</span></span>`;
 }
 let lastPodiumKey='';
 function render(){
@@ -63,7 +63,7 @@ function renderSchedule(){
 }
 async function loadSchedule(){try{const r=await fetch('/api/schedule',{cache:'no-store'});if(!r.ok)throw Error('Schedule unavailable');scheduleData=(await r.json()).schedule;renderSchedule()}catch(e){$('#schedule-list').innerHTML='<p class="empty">The schedule is temporarily unavailable. Please refresh to retry.</p>';}}
 document.querySelectorAll('[data-schedule]').forEach(b=>b.addEventListener('click',()=>{scheduleCategory=b.dataset.schedule;renderSchedule()}));renderSchedule();loadSchedule();
-$('#schedule-list').addEventListener('click',event=>{const button=event.target.closest('[data-round]');if(!button)return;const item=scheduleData[scheduleCategory][Number(button.dataset.round)];if(!item?.revealed)return;$('#syllabus-title').textContent=item.subject;$('#syllabus-category').textContent=scheduleLabels[scheduleCategory]+' / Round '+item.round;$('#syllabus-scope').textContent=item.scope||'Consult the curriculum reference below. Assessment-specific scope will be confirmed by the club.';const link=$('#syllabus-link');link.hidden=!item.syllabus_url;if(item.syllabus_url&&new URL(item.syllabus_url).protocol==='https:')link.href=item.syllabus_url;$('#syllabus-dialog').showModal();});
+$('#schedule-list').addEventListener('click',event=>{const button=event.target.closest('[data-round]');if(!button)return;const item=scheduleData[scheduleCategory][Number(button.dataset.round)];if(!item?.revealed)return;$('#syllabus-title').textContent=item.subject;$('#syllabus-category').textContent=scheduleLabels[scheduleCategory]+' / Round '+item.round;$('#syllabus-scope').textContent=item.scope||'Syllabus reference';const link=$('#syllabus-link');link.hidden=!item.syllabus_url;if(item.syllabus_url&&new URL(item.syllabus_url).protocol==='https:')link.href=item.syllabus_url;$('#syllabus-dialog').showModal();});
 $('#close-syllabus').addEventListener('click',()=>$('#syllabus-dialog').close());
 $('#syllabus-dialog').addEventListener('click',e=>{if(e.target===$('#syllabus-dialog')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close();}});
 window.addEventListener('focus',loadSchedule);window.addEventListener('hashchange',()=>{if(location.hash==='#schedule')loadSchedule()});
