@@ -5,7 +5,7 @@
   "installCommand": "",
   "functions": {
     "api/index.py": {
-      "includeFiles": "server.py"
+      "includeFiles": "*.py"
     }
   },
   "rewrites": [

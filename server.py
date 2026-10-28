@@ -6,6 +6,7 @@ from http.cookies import SimpleCookie
 from urllib.parse import urlparse, parse_qs
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
+import schedule_config
 ROOT = Path(__file__).resolve().parent
 for line in (ROOT / '.env').read_text().splitlines() if (ROOT / '.env').exists() else []:
     if '=' in line and not line.lstrip().startswith('#'):
@@ -164,12 +165,16 @@ class Handler(SimpleHTTPRequestHandler):
             if path=='/admin':self.path='/admin.html'
             return super().do_GET()
         try:
+            if path=='/api/schedule':
+                return self.json_response({'schedule':schedule_config.public(schedule_config.read(ROOT,URL,KEY))})
             if path=='/api/leaderboard':return self.json_response(public_results())
             if not self.authorized():return self.json_response({'error':'Unlock the admin panel first.'},401)
+            if path=='/api/admin/schedule':
+                return self.json_response({'schedule':schedule_config.read(ROOT,URL,KEY),'presets':[{'name':n,'url':schedule_config.PDF+'#page='+str(p)} for n,p in schedule_config.PRESETS]})
             if path=='/api/admin/session':return self.json_response({'authenticated':True,'storage':'supabase' if URL or KEY else 'sqlite','published_week':get_week()})
             if path=='/api/admin/participants':return self.json_response({'participants':[{**r,'total':total(r)} for r in all_rows()]})
             return self.json_response({'error':'Not found'},404)
-        except StorageError as e:return self.json_response({'error':str(e)},503)
+        except (StorageError,RuntimeError) as e:return self.json_response({'error':str(e)},503)
     def do_POST(self):self.mutate()
     def do_PUT(self):self.mutate()
     def mutate(self):
@@ -212,13 +217,17 @@ class Handler(SimpleHTTPRequestHandler):
                 rows=parse_csv(body.get('csv'));existing={r['sic'] for r in all_rows()};updates=sum(r['sic'] in existing for r in rows)
                 if body.get('commit') is True:save_rows(rows)
                 return self.json_response({'count':len(rows),'new':len(rows)-updates,'updates':updates,'saved':body.get('commit') is True})
+            if path=='/api/admin/schedule':
+                try:schedule_config.save(ROOT,URL,KEY,body.get('schedule'))
+                except ValueError as e:raise ValidationError(str(e))
+                return self.json_response({'ok':True})
             if path=='/api/admin/settings':
                 week=body.get('published_week')
                 if isinstance(week,bool) or not isinstance(week,int) or not 0<=week<=5:raise ValidationError('Published week must be 0–5.')
                 set_week(week);return self.json_response({'ok':True,'published_week':week})
             return self.json_response({'error':'Not found'},404)
         except ValidationError as e:return self.json_response({'error':str(e)},400)
-        except StorageError as e:return self.json_response({'error':str(e)},503)
+        except (StorageError,RuntimeError) as e:return self.json_response({'error':str(e)},503)
     def log_message(self,fmt,*args):pass
 if __name__=='__main__':
     if not(URL or KEY):connection().close()

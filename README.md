@@ -57,3 +57,13 @@ When ready, run `supabase/schema.sql` and add these **server-side Vercel environ
 - `SESSION_SECRET` (a long random secret; generate with `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`)
 
 Cloud sessions are signed and checked across function instances, with Secure HttpOnly cookies. Logout clears the browser cookie; signed tokens expire after eight hours. Rotate SESSION_SECRET to revoke all cloud sessions. Login throttling is per function instance; configure durable edge rate limits before a wider admin rollout.
+
+## Calendar reveals and club page
+
+Our Team is removed. About now describes Silicon Achievers’ Club using the supplied club guidelines; it flags the document’s conflicting CGPA thresholds instead of inventing one.
+
+Admin → **Schedule & subject reveals** manages five rounds per Junior, Senior CS, and Senior Core. Edit the subject, assessment scope, HTTPS syllabus reference, and optional date. Save with the reveal switch off for a private draft; reveal only when ready. The public API omits hidden subjects, scope, and references. Revealed calendar rows open an accessible syllabus dialog with a university PDF link. Presets use the CSE 2025–26 curriculum; they are not guaranteed exam scope, and no unrelated course is substituted for missing references.
+
+Drafts live in the **private** Supabase Storage bucket `achievex-config`, object `schedule.json`. This project’s bucket has already been created. For a new Supabase project, create that private bucket before saving schedules; do not make it public. Locally without Supabase, drafts are kept in ignored `.data/schedule.json`.
+
+Rank badges are visual leaderboard recognition within the selected category/period, not official awards: rank 1 Laureate, 2 Vanguard, 3 Luminary, 4–10 Elite, 11–25 Trailblazer, 26–50 Pathfinder, and 51+ Challenger. Equal ranks share badges.

@@ -79,6 +79,21 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.call('/api/admin/delete',{'sic':row['sic'],'confirm':True})[0],200)
         self.assertEqual(len(app.all_rows()),0)
         self.assertEqual(self.call('/api/admin/delete',{'sic':row['sic'],'confirm':True})[0],404)
+    def test_schedule_visibility_and_validation(self):
+        import schedule_config
+        schedule=schedule_config.defaults()
+        hidden=schedule_config.public(schedule)
+        self.assertNotIn('subject',hidden['junior'][0])
+        schedule['junior'][0].update(subject='C Programming',scope='Loops and functions',revealed=True)
+        checked=schedule_config.validate(schedule)
+        self.assertEqual(schedule_config.public(checked)['junior'][0]['subject'],'C Programming')
+        schedule['junior'][0]['syllabus_url']='javascript:alert(1)'
+        with self.assertRaises(ValueError):schedule_config.validate(schedule)
+    def test_schedule_routes_are_private(self):
+        self.assertEqual(self.call('/api/admin/schedule')[0],401)
+        self.assertEqual(self.call('/api/admin/schedule',{'schedule':{}})[0],401)
+        self.login()
+        self.assertEqual(self.call('/api/admin/schedule',{'schedule':{}})[0],400)
     def test_csv_duplicate(self):
         csv='full_name,sic,email,contact,year,branch,track\nA,24beca53,a@silicon.ac.in,9876543210,3,CSE,cs\nB,24beca53,b@silicon.ac.in,9876543210,3,CSE,cs\n'
         with self.assertRaises(app.ValidationError):app.parse_csv(csv)
