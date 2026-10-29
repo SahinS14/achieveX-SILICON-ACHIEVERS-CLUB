@@ -11,13 +11,13 @@
 .sidebar-season i{width:5px;height:5px;background:#b7dace;box-shadow:0 0 8px #b7dace20;border-radius:50%}
 .sidebar-rule{height:1px;background:#77839b70;margin:24px 0 26px}
 .sidebar nav{gap:8px;margin:0;display:flex;flex-direction:column}
-.sidebar nav a{padding:17px 15px;display:flex;flex-direction:row;align-items:center;gap:16px;min-height:62px;border:1px solid transparent;border-radius:7px;color:#bdc6d6;background:transparent;transition:background 180ms ease,color 180ms ease,border-color 180ms ease}
-.sidebar nav b{font:400 17px/1.3 'Outfit',sans-serif;letter-spacing:-.1px;text-align:left}
+.sidebar nav a{padding:16px 14px;display:flex;flex-direction:row;align-items:center;gap:14px;min-height:58px;box-sizing:border-box;border:1px solid transparent;border-radius:7px;color:#bdc6d6;background:transparent;overflow:hidden;transition:background 180ms ease,color 180ms ease,border-color 180ms ease}
+.sidebar nav b{font:450 16px/1.25 'Outfit',sans-serif;letter-spacing:-.1px;text-align:left;white-space:nowrap}
 .sidebar .nav-icon{width:24px;height:24px;display:block;flex-shrink:0;color:#c3cddd}
 .sidebar .nav-icon svg{width:24px;height:24px;display:block}
 .sidebar nav a.active{background:linear-gradient(115deg,#354455,#303b4ef5);border-color:#ffffff05;box-shadow:inset 0 1px #ffffff08,0 2px 5px #00000012;color:#f1f4f8}
 .sidebar nav a.active .nav-icon{color:#d1e8e2}
-.sidebar nav a.active b{font-weight:450}
+.sidebar nav a.active b{font-weight:500}
 .sidebar nav a.active:after{display:none}
 .sidebar nav i{display:none}
 .sidebar-bottom{margin-top:auto;padding-top:33px}
@@ -31,12 +31,18 @@
 .sidebar .theme-switch span{font:400 13px/1 'Outfit';margin:0}
 .sidebar .theme-switch button[aria-pressed=true]{background:#eef4f7;color:#263248;box-shadow:0 1px 5px #0002,inset 0 1px white}
 .sidebar-club{display:flex;gap:12px;align-items:center;border-top:1px solid #77839b70;margin-top:23px;padding-top:23px}
-.club-emblem{height:46px;width:46px;border:1px dashed #74829d88;border-radius:50%;padding:4px;position:relative;flex-shrink:0;overflow:visible}
-.club-emblem img{height:36px;width:36px;object-fit:cover;object-position:center;border-radius:50%;background:#080b12;clip-path:circle(49%);object-fit:cover}
+.club-emblem{height:46px;width:46px;border:1px dashed #74829d88;border-radius:50%;padding:4px;position:relative;flex-shrink:0;overflow:visible;box-sizing:border-box}
+.club-emblem img{height:36px;width:36px;object-fit:cover;object-position:center;border-radius:50%;background:#080b12;clip-path:circle(49%)}
 .club-emblem i{position:absolute;right:0;top:2px;width:8px;height:8px;border-radius:50%;background:#71cea0;border:2px solid #151a2b}
-.sidebar-club strong{display:block;font:400 12px/1.5 'Outfit';letter-spacing:0;color:#d8dfeb}
-.sidebar-club small{display:flex;gap:7px;align-items:center;font:400 10px/1.5 'Outfit';color:#8493aa;margin-top:4px}
-.sidebar-club small span{color:#a4b2c7;font-size:13px}
+.sidebar-club strong{display:block;font:600 14px/1.3 'Outfit';letter-spacing:0;color:#ffffff}
+.sidebar-club-info{flex:1;min-width:0}
+.club-univ-link{display:inline-flex;gap:7px;align-items:center;font:500 13px/1.3 'Outfit';color:#cbd5e1;transition:color 150ms ease;text-decoration:none}
+.club-univ-link:hover{color:#ffffff}
+.club-univ-link span{font-size:13px;opacity:.95}
+.univ-logo-emblem{width:16px;height:16px;object-fit:contain;border-radius:3px;flex-shrink:0;display:inline-block;vertical-align:middle}
+.club-instagram-link{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;border:1px solid #74829d44;background:#ffffff0a;transition:transform 150ms ease,border-color 150ms ease,box-shadow 150ms ease;flex-shrink:0;padding:0;overflow:hidden}
+.club-instagram-link svg{width:26px;height:26px;display:block}
+.club-instagram-link:hover{transform:scale(1.08);border-color:#e1306c99;box-shadow:0 0 12px #d6249f50}
 :root[data-theme=light] .sidebar{background:linear-gradient(145deg,#f6f8f5e8,#e6ece8ed);border-color:#a4b5ad80;box-shadow:inset 0 1px #fff,0 14px 45px #27442f06}
 :root[data-theme=light] .sidebar-wordmark{color:#294f48;text-shadow:none}
 :root[data-theme=light] .sidebar-wordmark>span{color:#75509e}
@@ -55,6 +61,10 @@
 :root[data-theme=light] .sidebar .theme-switch button[aria-pressed=true]{background:#fff;color:#314c3a}
 :root[data-theme=light] .sidebar-manifesto p,:root[data-theme=light] .sidebar-club small{color:#7c8c83}
 :root[data-theme=light] .sidebar-manifesto strong,:root[data-theme=light] .sidebar-club strong{color:#425c4c}
+:root[data-theme=light] .club-univ-link{color:#6c7d74}
+:root[data-theme=light] .club-univ-link:hover{color:#294f48}
+:root[data-theme=light] .club-instagram-link{color:#5c7465;border-color:#a4b5ad80;background:#ffffff50}
+:root[data-theme=light] .club-instagram-link:hover{color:#7635d8;border-color:#7635d8;background:#7635d815}
 }
 @media(min-width:1500px){.app-shell{grid-template-columns:320px minmax(0,1fr);padding-left:28px}.sidebar{padding:38px 27px 27px;margin-top:28px;top:28px;height:calc(100dvh - 56px)}.sidebar-wordmark{font-size:48px}.sidebar nav b{font-size:18px}.sidebar nav a{min-height:68px;gap:18px}.sidebar-season{font-size:12px}.sidebar-club strong{font-size:13px}.sidebar-club small{font-size:11px}}
 @media(min-width:701px) and (max-width:1100px){.app-shell{grid-template-columns:257px minmax(0,1fr);padding-left:14px}.sidebar{padding:28px 17px 21px;margin-top:16px;top:16px;height:calc(100dvh - 32px);border-radius:24px}.sidebar-wordmark{font-size:38px}.sidebar nav a{padding:16px 12px;gap:13px}.sidebar nav b{font-size:16px}.sidebar-season{font-size:10px;padding:13px 10px}.sidebar-club{gap:9px}.sidebar-club strong{font-size:11px}.sidebar-club small{font-size:9px}.sidebar-manifesto{padding-left:5px}.sidebar .brand{padding-left:5px}main{padding-left:23px;padding-right:23px}}
@@ -62,4 +72,4 @@
 @media(hover:hover) and (pointer:fine) and (min-width:701px){.sidebar nav a:not(.active):hover{color:#f1f5fc;background:#ffffff07;border-color:#ffffff05}:root[data-theme=light] .sidebar nav a:not(.active):hover{color:#284d37;background:#d6e2d9}.sidebar .theme-switch button:not([aria-pressed=true]):hover{background:#ffffff0c}}
 @media(prefers-reduced-motion:reduce){.sidebar nav a{transition:none}}
 
-@media(min-width:701px){.club-crop{display:block;position:relative;width:36px;height:36px;border-radius:50%;overflow:hidden;background:#080b12}.club-emblem .club-crop img{position:absolute;width:40px;height:auto;left:-2px;top:-8px;border-radius:0;clip-path:none;max-width:none}}
+@media(min-width:701px){.club-crop{display:flex;align-items:center;justify-content:center;position:relative;width:36px;height:36px;border-radius:50%;overflow:hidden;background:#080b12}.club-emblem .club-crop img{position:static;width:100%;height:100%;object-fit:cover;border-radius:50%;max-width:100%}}

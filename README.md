@@ -64,6 +64,16 @@ Our Team is removed. About now describes Silicon Achievers’ Club using the sup
 
 Admin → **Schedule & subject reveals** manages five rounds per Junior, Senior CS, and Senior Core. Edit the subject, assessment scope, HTTPS syllabus reference, and optional date. Save with the reveal switch off for a private draft; reveal only when ready. The public API omits hidden subjects, scope, and references. Revealed calendar rows open an accessible syllabus dialog with a university PDF link. Presets use the CSE 2025–26 curriculum; they are not guaranteed exam scope, and no unrelated course is substituted for missing references.
 
-Drafts live in the **private** Supabase Storage bucket `achievex-config`, object `schedule.json`. This project’s bucket has already been created. For a new Supabase project, create that private bucket before saving schedules; do not make it public. Locally without Supabase, drafts are kept in ignored `.data/schedule.json`.
+## Seven Achievement Badges
 
-Rank badges are visual leaderboard recognition within the selected category/period, not official awards: rank 1 Laureate, 2 Vanguard, 3 Luminary, 4–10 Elite, 11–25 Trailblazer, 26–50 Pathfinder, and 51+ Challenger. Equal ranks share badges.
+AchieveX features seven automated achievement badges calculated directly from verified exam results and participation data:
+1. **The Main Character 👑** (Ranking): Overall AchieveX champion with highest cumulative average percentage across finalized exams (requires completion of all published exams).
+2. **The Ace ⚡** (Ranking): Highest scorer in an individual weekly exam (evaluates each exam independently; multiple Ace awards preserved).
+3. **The Glow Up 📈** (Ranking): Greatest positive improvement in percentage points between consecutive finalized weekly exams.
+4. **On Fire 🔥** (Milestone): Consistently scores 80% or higher across three consecutive weekly exams.
+5. **Flawless 💎** (Milestone): Achieved a perfect 100% score in any verified weekly exam.
+6. **The Comeback Arc 🚀** (Milestone): Scores strictly below 50% in one exam and improves by at least 20 percentage points in the next exam.
+7. **The Unlocked Five 🔒** (Milestone): Verified participation or submission across all five designated championship exams.
+
+Badge assignment is 100% automated and transparent. There is no manual assignment by administrators or developers.
+
