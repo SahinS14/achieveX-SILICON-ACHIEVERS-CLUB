@@ -7,7 +7,9 @@ from http.cookiejar import CookieJar
 spec=importlib.util.spec_from_file_location('appserver',Path(__file__).resolve().parents[1]/'server.py');app=importlib.util.module_from_spec(spec);spec.loader.exec_module(app)
 
 def student(sic='24beca53',**kwargs):
-    return dict(full_name='Test Student',sic=sic,email='student@silicon.ac.in',contact='9876543210',gender='',year=3,branch='CSE',track='cs',week1=88,week2=91,week3=97,week4=None,week5=None,**kwargs)
+    row = dict(full_name='Test Student',sic=sic,email='student@silicon.ac.in',contact='9876543210',gender='',year=3,branch='CSE',track='cs',week1=88,week2=91,week3=97,week4=None,week5=None)
+    row.update(kwargs)
+    return row
 class Tests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -142,7 +144,7 @@ class Tests(unittest.TestCase):
 
     def test_ace_different_scales_and_normalization(self):
         s1 = student(sic='24beca01', week1=45) # 45 out of 50 = 90%
-        s2 = student(sic='24beca02', week1=85) # 85 out of 100 = 85%
+        s2 = student(sic='24beca02', week1=40) # 40 out of 50 = 80%
         eval_res = app.evaluate_badges([s1, s2], published_week=1, max_marks={1: 50.0})
         aces = [a for a in eval_res if a['badge_id'] == 'the-ace']
         self.assertEqual(len(aces), 1)
