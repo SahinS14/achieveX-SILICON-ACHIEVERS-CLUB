@@ -120,7 +120,7 @@ body[data-page="leaderboard"] .achievement-scene{display:none}
 .footer-crest img{position:static!important;width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important;display:block!important;max-width:100%!important;left:auto!important;top:auto!important}
 .footer-brand-text{display:inline-flex;align-items:baseline;font-weight:700}
 .footer-brand-text b{color:#c6a7f6!important;font-weight:800;margin-left:.5px}
-.footer-collab-x{color:#facc15!important;font-weight:800;font-size:24px;line-height:1;margin:0 4px;user-select:none;display:inline-block;vertical-align:middle}
+.footer-collab-x{color:#facc15!important;font-weight:800;font-size:28px;line-height:1;margin:0 4px;user-select:none;display:inline-block;vertical-align:middle}
 .footer-univ-link{display:inline-flex;align-items:center;color:inherit!important;text-decoration:none;transition:color 150ms ease}
 .footer-univ-link:hover{color:var(--accent)!important}
 
