@@ -115,12 +115,12 @@ body[data-page="leaderboard"] .achievement-scene{display:none}
 }
 
 /* Footer Brand Lockup ([Logo] AchieveX x Silicon Achievers' Club) */
-.footer-collab{display:inline-flex;align-items:center;gap:6px!important;flex-wrap:wrap;font:600 15px 'Outfit',sans-serif;color:inherit;letter-spacing:.2px}
-.footer-crest{width:22px!important;height:22px!important;border-radius:50%!important;overflow:hidden!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;background:#080b12!important;box-shadow:0 0 0 1px rgba(219,199,142,.35)!important;flex-shrink:0!important}
+.footer-collab{display:inline-flex;align-items:center;gap:4px!important;flex-wrap:wrap;font:600 15px 'Outfit',sans-serif;color:inherit;letter-spacing:.2px}
+.footer-crest{width:22px!important;height:22px!important;border-radius:50%!important;overflow:hidden!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;background:#080b12!important;box-shadow:0 0 0 1px rgba(219,199,142,.35)!important;flex-shrink:0!important;margin-right:3px!important}
 .footer-crest img{position:static!important;width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important;display:block!important;max-width:100%!important;left:auto!important;top:auto!important}
 .footer-brand-text{display:inline-flex;align-items:baseline;font-weight:700}
 .footer-brand-text b{color:#c6a7f6!important;font-weight:800;margin-left:.5px}
-.footer-collab-x{color:#facc15!important;font-weight:800;font-size:34px!important;line-height:.75!important;margin:0 1px!important;user-select:none;display:inline-flex!important;align-items:center!important;justify-content:center!important;vertical-align:middle}
+.footer-collab-x{color:#facc15!important;font-weight:800;font-size:34px!important;line-height:.75!important;margin:0 -2px!important;user-select:none;display:inline-flex!important;align-items:center!important;justify-content:center!important;vertical-align:middle}
 .footer-univ-link{display:inline-flex;align-items:center;color:inherit!important;text-decoration:none;transition:color 150ms ease}
 .footer-univ-link:hover{color:var(--accent)!important}
 
@@ -131,9 +131,9 @@ body[data-page="leaderboard"] .achievement-scene{display:none}
 :root[data-theme=light] .footer-univ-link{color:var(--text)!important}
 :root[data-theme=light] .footer-univ-link:hover{color:var(--accent)!important}
 @media(max-width:700px){
-  .footer-collab{font-size:13px;gap:5px!important}
+  .footer-collab{font-size:13px;gap:4px!important}
   .footer-crest{width:20px!important;height:20px!important}
-  .footer-collab-x{font-size:22px!important;line-height:.75!important;margin:0 1px!important}
+  .footer-collab-x{font-size:34px!important;line-height:.75!important;margin:0 -2px!important}
 }
 
 /* Universal Podium Clearance: Ensures 'THE HALL OF CONTENDERS' never underlaps avatars on any device */
@@ -177,7 +177,7 @@ body[data-page="leaderboard"] .achievement-scene{display:none}
   .footer-collab{
     justify-content:center!important;
     text-align:center!important;
-    gap:8px!important;
+    gap:4px!important;
     width:100%!important;
   }
   .footer-social{
