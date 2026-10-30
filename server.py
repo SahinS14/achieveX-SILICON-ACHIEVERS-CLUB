@@ -21,13 +21,322 @@ SESSIONS, ATTEMPTS = {}, {}
 class ValidationError(Exception): pass
 class StorageError(Exception): pass
 
+BADGE_DEFINITIONS = [
+    {
+        'id': 'the-main-character',
+        'name': 'The Main Character',
+        'icon': '👑',
+        'description': 'Overall AchieveX champion with the highest cumulative performance across weekly exams.',
+        'category': 'ranking',
+        'criteria': 'Highest average percentage across all eligible, finalized exams (all published exams required).',
+        'image_url': '/assets/badges/the-main-character.png'
+    },
+    {
+        'id': 'the-ace',
+        'name': 'The Ace',
+        'icon': '⚡',
+        'description': 'Highest scorer in an individual weekly exam.',
+        'category': 'ranking',
+        'criteria': 'Attain the highest normalized score in an individual weekly exam.',
+        'image_url': '/assets/badges/the-ace.png'
+    },
+    {
+        'id': 'the-glow-up',
+        'name': 'The Glow Up',
+        'icon': '📈',
+        'description': 'Biggest improvement compared with the previous weekly exam.',
+        'category': 'ranking',
+        'criteria': 'Greatest positive improvement in percentage points between consecutive finalized weekly exams.',
+        'image_url': '/assets/badges/the-glow-up.png'
+    },
+    {
+        'id': 'on-fire',
+        'name': 'On Fire',
+        'icon': '🔥',
+        'description': 'Consistently scores at least 80% across three consecutive weekly exams.',
+        'category': 'milestone',
+        'criteria': 'Score 80% or higher in any three consecutive finalized weekly exams.',
+        'image_url': '/assets/badges/on-fire.png'
+    },
+    {
+        'id': 'flawless',
+        'name': 'Flawless',
+        'icon': '💎',
+        'description': 'Achieved a perfect score in a weekly exam.',
+        'category': 'milestone',
+        'criteria': 'Achieve a perfect 100% score in any verified weekly exam.',
+        'image_url': '/assets/badges/flawless.png'
+    },
+    {
+        'id': 'the-comeback-arc',
+        'name': 'The Comeback Arc',
+        'icon': '🚀',
+        'description': 'Makes a remarkable recovery after a low scoring exam.',
+        'category': 'milestone',
+        'criteria': 'Score strictly below 50% in one exam and improve by at least 20 percentage points in the next exam.',
+        'image_url': '/assets/badges/the-comeback-arc.png'
+    },
+    {
+        'id': 'the-unlocked-five',
+        'name': 'The Unlocked Five',
+        'icon': '🔒',
+        'description': 'Participated in all five required weekly exams.',
+        'category': 'milestone',
+        'criteria': 'Complete verified participation or submission across all five designated championship exams.',
+        'image_url': '/assets/badges/the-unlocked-five.png'
+    }
+]
+
 def connection():
     if CLOUD: raise StorageError('Connect Supabase in Vercel environment variables to enable storage.')
     DB.parent.mkdir(exist_ok=True)
     c = sqlite3.connect(DB); c.row_factory = sqlite3.Row
     c.execute('create table if not exists participants (sic text primary key, data text not null)')
     c.execute('create table if not exists settings (id integer primary key, published_week integer not null)')
-    c.execute('insert or ignore into settings values (1,0)'); c.commit(); return c
+    c.execute('insert or ignore into settings values (1,0)')
+    c.execute('''create table if not exists badge_definitions (
+        id text primary key,
+        name text not null,
+        icon text not null,
+        description text not null,
+        category text not null,
+        criteria text not null,
+        image_url text not null
+    )''')
+    c.execute('''create table if not exists student_badges (
+        student_sic text not null,
+        badge_id text not null,
+        award_date text not null,
+        qualifying_exam_id text not null default '',
+        evidence text not null default '',
+        is_active integer not null default 1,
+        primary key (student_sic, badge_id, qualifying_exam_id)
+    )''')
+    c.execute('create index if not exists idx_student_badges_student on student_badges(student_sic)')
+    c.execute('create index if not exists idx_student_badges_badge on student_badges(badge_id)')
+    for b in BADGE_DEFINITIONS:
+        c.execute('insert into badge_definitions values (?,?,?,?,?,?,?) on conflict(id) do update set name=excluded.name,icon=excluded.icon,description=excluded.description,category=excluded.category,criteria=excluded.criteria,image_url=excluded.image_url',
+                  (b['id'],b['name'],b['icon'],b['description'],b['category'],b['criteria'],b['image_url']))
+    c.commit(); return c
+
+def evaluate_badges(rows=None, published_week=None, max_marks=None):
+    if rows is None: rows = all_rows()
+    if published_week is None: published_week = get_week()
+    if max_marks is None: max_marks = {1:100.0, 2:100.0, 3:100.0, 4:100.0, 5:100.0}
+    for m in max_marks.values():
+        if m <= 0: raise ValidationError('Maximum exam score must be greater than zero.')
+
+    # Score normalization: p_{s,i} = (x_{s,i} / m_i) * 100
+    norm_scores = {}
+    for r in rows:
+        sic = r['sic']
+        norm_scores[sic] = {}
+        for i in range(1, 6):
+            val = r.get('week' + str(i))
+            if val is not None:
+                m_i = float(max_marks.get(i, 100.0))
+                norm_scores[sic][i] = (float(val) / m_i) * 100.0
+            else:
+                norm_scores[sic][i] = None
+
+    awards = []
+    N = int(published_week)
+
+    # Badge 1: The Main Character 👑
+    # Average percentage across the same set of eligible, finalized exams (1..N).
+    # Exclude students who lack valid results for any exam required in comparison.
+    if N >= 1:
+        averages = {}
+        for r in rows:
+            sic = r['sic']
+            scores_n = [norm_scores[sic][i] for i in range(1, N + 1)]
+            if all(s is not None for s in scores_n):
+                averages[sic] = sum(scores_n) / N
+        if averages:
+            max_avg = max(averages.values())
+            for sic, avg in averages.items():
+                if math.isclose(avg, max_avg, rel_tol=1e-9, abs_tol=1e-9):
+                    awards.append({
+                        'student_sic': sic,
+                        'badge_id': 'the-main-character',
+                        'qualifying_exam_id': f'weeks1-{N}',
+                        'evidence': f'Highest cumulative average: {avg:.2f}% across {N} finalized exams',
+                        'category': 'ranking'
+                    })
+
+    # Badge 2: The Ace ⚡
+    # Highest scorer in an individual weekly exam. Evaluate each exam independently.
+    for i in range(1, N + 1):
+        exam_scores = {r['sic']: norm_scores[r['sic']][i] for r in rows if norm_scores[r['sic']][i] is not None}
+        if exam_scores:
+            max_score = max(exam_scores.values())
+            for sic, score in exam_scores.items():
+                if math.isclose(score, max_score, rel_tol=1e-9, abs_tol=1e-9):
+                    awards.append({
+                        'student_sic': sic,
+                        'badge_id': 'the-ace',
+                        'qualifying_exam_id': f'week{i}',
+                        'evidence': f'Top score in Week {i}: {score:.2f}%',
+                        'category': 'ranking'
+                    })
+
+    # Badge 3: The Glow Up 📈
+    # Biggest positive improvement compared with previous weekly exam. Consecutive exams only.
+    if N >= 2:
+        improvements = [] # (delta, sic, exam_i)
+        for r in rows:
+            sic = r['sic']
+            for i in range(2, N + 1):
+                prev = norm_scores[sic][i - 1]
+                curr = norm_scores[sic][i]
+                if prev is not None and curr is not None:
+                    delta = curr - prev
+                    if delta > 0:
+                        improvements.append((delta, sic, i))
+        if improvements:
+            max_delta = max(imp[0] for imp in improvements)
+            for delta, sic, i in improvements:
+                if math.isclose(delta, max_delta, rel_tol=1e-9, abs_tol=1e-9):
+                    awards.append({
+                        'student_sic': sic,
+                        'badge_id': 'the-glow-up',
+                        'qualifying_exam_id': f'week{i}',
+                        'evidence': f'Biggest improvement: +{delta:.2f} percentage points (Week {i-1} to Week {i})',
+                        'category': 'ranking'
+                    })
+
+    # Badge 4: On Fire 🔥
+    # Consistently scores >= 80% across three consecutive weekly exams.
+    if N >= 3:
+        for r in rows:
+            sic = r['sic']
+            for i in range(1, N - 1):
+                s1, s2, s3 = norm_scores[sic][i], norm_scores[sic][i + 1], norm_scores[sic][i + 2]
+                if s1 is not None and s2 is not None and s3 is not None:
+                    if s1 >= 80.0 and s2 >= 80.0 and s3 >= 80.0:
+                        awards.append({
+                            'student_sic': sic,
+                            'badge_id': 'on-fire',
+                            'qualifying_exam_id': f'week{i}-week{i+2}',
+                            'evidence': f'Scored >= 80% in 3 consecutive exams (Weeks {i}–{i+2}: {s1:.1f}%, {s2:.1f}%, {s3:.1f}%)',
+                            'category': 'milestone'
+                        })
+
+    # Badge 5: Flawless 💎
+    # Achieved a perfect score in a weekly exam (100%).
+    for r in rows:
+        sic = r['sic']
+        for i in range(1, N + 1):
+            s = norm_scores[sic][i]
+            if s is not None and math.isclose(s, 100.0, rel_tol=1e-9, abs_tol=1e-9):
+                awards.append({
+                    'student_sic': sic,
+                    'badge_id': 'flawless',
+                    'qualifying_exam_id': f'week{i}',
+                    'evidence': f'Perfect 100% score in Week {i}',
+                    'category': 'milestone'
+                })
+
+    # Badge 6: The Comeback Arc 🚀
+    # Previous exam score strictly below 50%, and next consecutive exam improves by at least 20 percentage points.
+    if N >= 2:
+        for r in rows:
+            sic = r['sic']
+            for i in range(2, N + 1):
+                prev = norm_scores[sic][i - 1]
+                curr = norm_scores[sic][i]
+                if prev is not None and curr is not None:
+                    if prev < 50.0 and (curr - prev) >= 20.0:
+                        awards.append({
+                            'student_sic': sic,
+                            'badge_id': 'the-comeback-arc',
+                            'qualifying_exam_id': f'week{i}',
+                            'evidence': f'Recovery from {prev:.1f}% in Week {i-1} to {curr:.1f}% in Week {i} (+{(curr-prev):.1f} pts)',
+                            'category': 'milestone'
+                        })
+
+    # Badge 7: The Unlocked Five 🔒
+    # Participated in all five required weekly exams. Score 0 can qualify if student participated; missing does not.
+    for r in rows:
+        sic = r['sic']
+        participations = [r.get('week' + str(i)) is not None for i in range(1, 6)]
+        if all(participations):
+            awards.append({
+                'student_sic': sic,
+                'badge_id': 'the-unlocked-five',
+                'qualifying_exam_id': 'weeks1-5',
+                'evidence': 'Verified participation across all five championship exams',
+                'category': 'milestone'
+            })
+
+    return awards
+
+def evaluate_and_save_badges(max_marks=None):
+    if URL or KEY: return
+    rows = all_rows()
+    week = get_week()
+    awards = evaluate_badges(rows, week, max_marks)
+    today = time.strftime('%Y-%m-%d')
+    with LOCK, connection() as c:
+        # Inactivate previous ranking awards; only current ranking leaders are active
+        c.execute("update student_badges set is_active=0 where badge_id in ('the-main-character', 'the-ace', 'the-glow-up')")
+        # For milestones, inactivate if underlying scores no longer qualify (e.g. score corrected or invalidated)
+        active_keys = {(a['student_sic'], a['badge_id'], a['qualifying_exam_id']) for a in awards}
+        milestones = ('on-fire', 'flawless', 'the-comeback-arc', 'the-unlocked-five')
+        placeholders = ','.join('?' for _ in milestones)
+        for r in c.execute(f"select student_sic, badge_id, qualifying_exam_id from student_badges where is_active=1 and badge_id in ({placeholders})", milestones).fetchall():
+            if (r['student_sic'], r['badge_id'], r['qualifying_exam_id']) not in active_keys:
+                c.execute('update student_badges set is_active=0 where student_sic=? and badge_id=? and qualifying_exam_id=?',
+                          (r['student_sic'], r['badge_id'], r['qualifying_exam_id']))
+        for a in awards:
+            c.execute('''insert into student_badges (student_sic, badge_id, award_date, qualifying_exam_id, evidence, is_active)
+                         values (?, ?, ?, ?, ?, 1)
+                         on conflict(student_sic, badge_id, qualifying_exam_id) do update set
+                             evidence=excluded.evidence,
+                             is_active=1''',
+                      (a['student_sic'], a['badge_id'], today, a['qualifying_exam_id'], a['evidence']))
+        c.commit()
+
+def get_student_badges_map():
+    if URL or KEY: return {}
+    defs = {b['id']: b for b in BADGE_DEFINITIONS}
+    with connection() as c:
+        rows = c.execute('''select student_sic, badge_id, award_date, qualifying_exam_id, evidence
+                            from student_badges
+                            where is_active=1
+                            order by award_date asc, qualifying_exam_id asc''').fetchall()
+    by_student = {}
+    for r in rows:
+        sic = r['student_sic']
+        bid = r['badge_id']
+        d = defs.get(bid, {})
+        student_list = by_student.setdefault(sic, [])
+        # Group multiple awards of the same badge (e.g. multiple Aces) cleanly
+        existing = next((b for b in student_list if b['id'] == bid), None)
+        record = {
+            'award_date': r['award_date'],
+            'qualifying_exam_id': r['qualifying_exam_id'],
+            'evidence': r['evidence']
+        }
+        if existing:
+            existing['count'] += 1
+            existing['history'].append(record)
+        else:
+            student_list.append({
+                'id': bid,
+                'name': d.get('name', bid),
+                'icon': d.get('icon', ''),
+                'description': d.get('description', ''),
+                'category': d.get('category', ''),
+                'criteria': d.get('criteria', ''),
+                'image_url': d.get('image_url', ''),
+                'award_date': r['award_date'],
+                'qualifying_exam_id': r['qualifying_exam_id'],
+                'evidence': r['evidence'],
+                'count': 1,
+                'history': [record]
+            })
+    return by_student
 
 def remote(path, method='GET', body=None):
     if not URL.startswith('https://') or not KEY: raise StorageError('Complete both Supabase settings in .env, then restart.')
@@ -55,17 +364,23 @@ def save_rows(rows):
     if URL or KEY: remote('rpc/import_participants', 'POST', {'records':rows}); return
     with LOCK, connection() as c:
         c.executemany('insert into participants values (?,?) on conflict(sic) do update set data=excluded.data', [(r['sic'],json.dumps(r)) for r in rows])
+    evaluate_and_save_badges()
 def delete_row(sic):
     if not re.fullmatch(r'[a-z0-9]{5,24}',sic): raise ValidationError('Invalid SIC.')
     if URL or KEY:
         deleted=remote('participants?sic=eq.'+sic,'DELETE')
         return bool(deleted)
     with LOCK, connection() as c:
-        return c.execute('delete from participants where sic=?',(sic,)).rowcount>0
+        c.execute('delete from student_badges where student_sic=?', (sic,))
+        deleted = c.execute('delete from participants where sic=?',(sic,)).rowcount>0
+    if deleted:
+        evaluate_and_save_badges()
+    return deleted
 
 def set_week(week):
     if URL or KEY: remote('competition_settings?id=eq.1','PATCH',{'published_week':week}); return
     with connection() as c: c.execute('update settings set published_week=? where id=1',(week,))
+    evaluate_and_save_badges()
 
 def validate(raw):
     def text(key, required=True, maxlen=120):
@@ -94,12 +409,21 @@ def validate(raw):
 
 def total(r,week=5): return round(sum(r.get('week'+str(i)) or 0 for i in range(1,week+1)),2)
 def public_results():
-    if CLOUD and not (URL or KEY): return {'published_week':0,'participants':[], 'setup_pending':True}
+    if CLOUD and not (URL or KEY): return {'published_week':0,'participants':[], 'setup_pending':True, 'badge_definitions':BADGE_DEFINITIONS}
     week=get_week(); rows=all_rows(); result=[]
+    badges_map = get_student_badges_map()
     for r in rows:
         # Personal contact details never appear in this projection.
-        result.append({'full_name':r['full_name'],'sic':r['sic'],'year':r['year'],'track':r['track'],'scores':[r.get('week'+str(i)) if i<=week else None for i in range(1,6)],'total':total(r,week)})
-    return {'published_week':week,'participants':result}
+        result.append({
+            'full_name':r['full_name'],
+            'sic':r['sic'],
+            'year':r['year'],
+            'track':r['track'],
+            'scores':[r.get('week'+str(i)) if i<=week else None for i in range(1,6)],
+            'total':total(r,week),
+            'badges':badges_map.get(r['sic'], [])
+        })
+    return {'published_week':week,'participants':result, 'badge_definitions':BADGE_DEFINITIONS}
 
 ALIASES={'full name':'full_name','silicon mail id':'email','silicon mail':'email','contact number':'contact','current year of study':'year','current year':'year','branch':'branch','sic':'sic','gender':'gender','track':'track'}
 def parse_csv(content):
@@ -167,6 +491,7 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             if path=='/api/schedule':
                 return self.json_response({'schedule':schedule_config.public(schedule_config.read(ROOT,URL,KEY))})
+            if path=='/api/badges':return self.json_response({'badges':BADGE_DEFINITIONS})
             if path=='/api/leaderboard':return self.json_response(public_results())
             if not self.authorized():return self.json_response({'error':'Unlock the admin panel first.'},401)
             if path=='/api/admin/schedule':
