@@ -160,3 +160,37 @@ body[data-page="leaderboard"] .achievement-scene{display:none}
   .podium-caption{top:12px!important}
   .first .pod-block{height:135px!important}
 }
+/* Mobile centered footer layout with bottom divider rule */
+.footer-mobile-rule{display:none}
+
+@media(max-width:700px){
+  .main-footer{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    gap:12px!important;
+    padding:24px 0 calc(28px + env(safe-area-inset-bottom))!important;
+  }
+  .footer-collab{
+    justify-content:center!important;
+    text-align:center!important;
+    gap:8px!important;
+    width:100%!important;
+  }
+  .footer-social{
+    justify-content:center!important;
+    display:flex!important;
+    width:100%!important;
+  }
+  .footer-mobile-rule{
+    display:block!important;
+    width:48px!important;
+    height:2.5px!important;
+    border-radius:2px!important;
+    background:var(--line)!important;
+    margin:6px auto 0!important;
+    opacity:.7!important;
+  }
+}
