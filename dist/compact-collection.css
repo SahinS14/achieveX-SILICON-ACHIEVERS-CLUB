@@ -36,3 +36,22 @@
  .badge-carousel-controls button:focus-visible,#badges-grid:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 }
 @media(prefers-reduced-motion:reduce){.badge-carousel-dots button:after{transition:none}}
+
+/* Center the mobile collectible and club signature on one consistent axis. */
+@media(max-width:700px){
+ #badges .minimal-badge .honour-copy{text-align:center;width:100%;min-width:0}
+ #badges .badge-card-desc{margin-left:auto;margin-right:auto;max-width:30ch}
+ #badges .honour-rule summary{justify-content:center;gap:14px}
+ #badges .honour-rule .badge-card-criteria-text{text-align:center;margin-left:auto;margin-right:auto;max-width:34ch}
+ .club-footer.main-footer{text-align:center;justify-items:center;gap:26px;padding-top:32px}
+ .club-footer .footer-identity{flex-direction:column;align-items:center;gap:17px;width:100%}
+ .club-footer .footer-kicker{font-size:8px;line-height:1.6;letter-spacing:1.5px;margin-bottom:8px}
+ .club-footer .footer-identity strong{display:block;font-size:23px;line-height:1.2}
+ .club-footer .footer-identity p{font-size:12px;line-height:1.7;max-width:30ch;margin:10px auto 0}
+ .club-footer .footer-destinations{width:100%;max-width:360px;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;justify-items:center}
+ .club-footer .footer-destinations a{width:100%;min-height:54px;text-align:center}
+ .club-footer .footer-destinations a>span{font-size:8px;line-height:1.6;letter-spacing:1.1px}
+ .club-footer .footer-destinations b{justify-content:center;align-items:center;gap:8px;margin-top:9px}
+ .club-footer .footer-baseline{width:100%;flex-direction:column;justify-content:center;gap:5px;font-size:10px;line-height:1.7;padding-top:20px}
+ .club-footer .footer-baseline>span:first-child{max-width:none}
+}
