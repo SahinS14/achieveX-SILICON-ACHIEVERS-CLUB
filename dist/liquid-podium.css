@@ -4,3 +4,28 @@
 @media(hover:hover) and (pointer:fine){.page-pill button:not([aria-current=page]):hover{background:#ffffff0d}.page-pill button[aria-current=page]:hover{background:#9bf3cf;color:#183d33}.pagination-controls .page-arrow:not(:disabled):hover{background:#4c3b5f}}
 @media(max-width:700px){.leaderboard-pagination{gap:14px}.pagination-controls{gap:9px;width:100%}.page-pill{gap:2px;padding:6px 9px;min-width:0}.page-pill button{width:30px;height:33px;font-size:12px;min-width:27px;flex-shrink:1}.pagination-controls .page-arrow{width:33px;height:33px;flex-shrink:0;font-size:21px}.pagination-controls .page-gap{font-size:12px}.round-tag{font-size:6px;letter-spacing:.6px}.arena-prize>.prize-trophy{width:27px;height:29px}.prize-trophy svg{width:25px;height:25px}.liquid-wave,.liquid-wave svg{height:23px}.liquid-wave{top:-15px}.wave-back{top:-18px}}
 @media(prefers-reduced-motion:reduce){.pod-liquid,.liquid-wave svg{animation:none}.liquid-wave svg{transform:translateX(-20%)}}
+
+/* Warm yellow trial for the championship standings panel. */
+#leaderboard .ranking-panel{--text:#302519;--muted:#685437;--line:#8c682d2b;--glass-border:#946e3130;--accent:#60451f;background:#f5d776;border:1px solid #e2be57;box-shadow:inset 0 1px #fff5,0 12px 30px #0000000a;color:#302519}
+#leaderboard .ranking-panel .ranking-head h2,#leaderboard .ranking-panel .rank-info h3{color:#302519}
+#leaderboard .ranking-panel :is(.ranking-head p,.list-labels,.list-footer,.rank-meta,.student-year,.search-hint,.search-row>span){color:#685437}
+#leaderboard .ranking-panel :is(.search,select){background:#fff3;border-color:#94702d40;color:#302519;box-shadow:none}
+#leaderboard .ranking-panel .search input{color:#302519}
+#leaderboard .ranking-panel .search input::placeholder{color:#79623f;opacity:1}
+#leaderboard .ranking-panel .search svg{color:#6c512a}
+#leaderboard .ranking-panel .rank-row{background:#fff9df8c;border:1px solid #94702d1c;box-shadow:inset 0 1px #fff5}
+#leaderboard .ranking-panel .rank-row.leader{background:#fff5d1;border-color:#ab792e59}
+#leaderboard .ranking-panel .rank-number{color:#8b6e3b}
+#leaderboard .ranking-panel .rank-total strong{color:#46321c}
+#leaderboard .ranking-panel .rank-total small{color:#79623f}
+#leaderboard .ranking-panel .bar{background:#88612525}
+#leaderboard .ranking-panel .bar span{background:linear-gradient(90deg,#9e7635,#64471e)}
+#leaderboard .ranking-panel .empty{color:#5f492c}
+#leaderboard .ranking-panel:before{background:#a8833d65}
+:root[data-theme=light] #leaderboard .ranking-panel{background:#f5d776;border-color:#e2be57}
+:root[data-theme=light] #leaderboard .ranking-panel :is(h2,h3,strong){color:#302519}
+:root[data-theme=light] #leaderboard .ranking-panel :is(p,small,.rank-meta,.student-year,.rank-number,.list-labels,.list-footer){color:#685437}
+:root[data-theme=light] #leaderboard .ranking-panel .rank-row{background:#fff9df8c;border-color:#94702d1c}
+:root[data-theme=light] #leaderboard .ranking-panel .rank-row.leader{background:#fff5d1;border-color:#ab792e59}
+:root[data-theme=light] #leaderboard .ranking-panel :is(input,select){color:#302519}
+@media(hover:hover) and (pointer:fine){#leaderboard .ranking-panel .rank-row:hover{background:#fff5d1;border-color:#aa7a334d}}
