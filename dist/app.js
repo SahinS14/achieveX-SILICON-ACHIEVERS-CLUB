@@ -72,14 +72,19 @@ const total=p=>period==='all'?Math.round(p.scores.slice(0,publishedWeek).reduce(
 function avatar(p){const n=p.index%16;return `<span class="avatar-art" style="background-position:${(n%4)*100/3}% ${Math.floor(n/4)*100/3}%" aria-hidden="true"></span>`}
 function renderBadges(p){
  const list=p.badges||[];
- if(!list.length) return '';
- return `<div class="student-badges-list">${list.map(b=>`
-   <span class="badge-chip" title="${escapeHTML(b.name)} · ${escapeHTML(b.evidence||b.description)}" tabindex="0">
-     <img class="badge-chip-icon" src="${escapeHTML(b.image_url)}" alt="">
-     <span class="badge-chip-name">${escapeHTML(b.name)}${b.count>1?` <b class="badge-chip-count">×${b.count}</b>`:''}</span>
-   </span>
- `).join('')}</div>`;
+ if(!list.length)return '';
+ return `<div class="student-badges-list">${list.slice(0,2).map(b=>`<button type="button" class="badge-chip" data-badge-sic="${escapeHTML(p.id)}" data-badge-id="${escapeHTML(b.id)}" aria-label="View ${escapeHTML(b.name)} achievement for ${escapeHTML(p.name)}"><img class="badge-chip-icon" src="${escapeHTML(b.image_url)}" alt="" loading="lazy"><span class="badge-chip-name">${escapeHTML(b.name)}${b.count>1?` <b class="badge-chip-count">×${b.count}</b>`:''}</span></button>`).join('')}${list.length>2?`<button type="button" class="badge-chip badge-more" data-badge-sic="${escapeHTML(p.id)}" aria-label="View all ${list.length} achievements for ${escapeHTML(p.name)}">+${list.length-2}</button>`:''}</div>`;
 }
+$('#rows').addEventListener('click',event=>{
+ const button=event.target.closest('[data-badge-sic]');if(!button)return;
+ const student=allContenders.find(p=>p.sic===button.dataset.badgeSic);if(!student)return;
+ const badges=(student.badges||[]).filter(b=>!button.dataset.badgeId||b.id===button.dataset.badgeId);
+ $('#badge-detail-title').textContent=student.full_name+' · Achievements';
+ $('#badge-detail-body').innerHTML=badges.map(b=>`<article class="badge-evidence"><img src="${escapeHTML(b.image_url)}" alt=""><div><h3>${escapeHTML(b.name)}</h3><p>${escapeHTML(b.criteria)}</p><ul>${(b.history||[b]).map(h=>`<li>${escapeHTML(h.evidence||b.description)}</li>`).join('')}</ul></div></article>`).join('');
+ $('#badge-detail-dialog').showModal();
+});
+$('#close-badge-detail').addEventListener('click',()=>$('#badge-detail-dialog').close());
+$('#badge-detail-dialog').addEventListener('click',event=>{if(event.target===event.currentTarget){const r=event.target.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)event.target.close();}});
 
 let lastPodiumKey='',leaderboardPage=1,lastPaginationFilter='';const pageSize=15;
 function render(){
@@ -90,22 +95,18 @@ function render(){
  const podiumKey=key+period+boardRevision;
  if(lastPodiumKey!==podiumKey){lastPodiumKey=podiumKey;const order=[data[1],data[0],data[2]].filter(Boolean);$('#podium').innerHTML=order.map(p=>`<article class="pod-entry ${p.rank===1?'first':p.rank===2?'second':'third'}"><div class="pod-person"><div class="avatar">${p.rank===1?'<span class="crown">♛</span>':''}${avatar(p)}</div><h3>${escapeHTML(p.name)}</h3><span class="pod-points"><span class="score-value" data-score="${total(p)}">${formatScore(total(p))}</span><small>PTS</small></span></div><div class="pod-block"><div class="platform-top"></div><div class="pod-liquid" style="height:${Math.max(12,Math.min(100,total(p)/(period==='all'?Math.max(100,publishedWeek*100):100)*100))}%" aria-hidden="true"><div class="liquid-wave wave-back"><svg viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 20Q50 0 100 20T200 20T300 20T400 20V40H0Z"/></svg></div><div class="liquid-wave wave-front"><svg viewBox="0 0 400 40" preserveAspectRatio="none"><path d="M0 20Q50 0 100 20T200 20T300 20T400 20V40H0Z"/></svg></div></div><strong>${p.rank}</strong><span>${p.rank===1?'THE PACESETTER':'THE CONTENDER'}</span></div></article>`).join('');}
  const query=$('#search').value.trim().toLowerCase(),filtered=data.filter(p=>(p.name+' '+p.id).toLowerCase().includes(query));
- $('#count').textContent=`${filtered.length} of ${data.length} contenders · ${category==='junior'?'Junior':key==='cs'?'Senior / CS':'Senior / Core'} · ${period==='all'?'Cumulative / 500':`Week ${Number(period)+1}`}`;
+ $('#count').textContent=!hasResults?(resultsFailed?'Results unavailable':'Loading published results…'):`${filtered.length} of ${data.length} contenders · ${category==='junior'?'Junior':key==='cs'?'Senior / CS':'Senior / Core'} · ${period==='all'?'Cumulative / 500':`Week ${Number(period)+1}`}`;
  const filterKey=key+'|'+period+'|'+query;if(filterKey!==lastPaginationFilter){leaderboardPage=1;lastPaginationFilter=filterKey;}const pages=Math.max(1,Math.ceil(filtered.length/pageSize));leaderboardPage=Math.min(leaderboardPage,pages);const start=(leaderboardPage-1)*pageSize,visible=filtered.slice(start,start+pageSize);renderPagination(filtered.length,pages,start,visible.length);
- $('#rows').innerHTML=filtered.length?visible.map(p=>`<article class="rank-row ${p.rank===1?'leader':''}"><span class="rank-number">${p.rank}</span><span class="avatar">${avatar(p)}</span><div class="rank-info"><h3>${escapeHTML(p.name)}</h3><div class="rank-meta"><span>${escapeHTML(p.id)}</span><span>·</span><span class="student-year">${p.year}</span></div>${renderBadges(p)}</div><div class="rank-total"><strong class="score-value" data-score="${total(p)}">${formatScore(total(p))}</strong><small>pts</small><div class="bar"><span style="width:${total(p)/max*100}%"></span></div></div></article>`).join(''):`<p class="empty">${query?'No contenders match your search.':publishedWeek===0?'The first results are on their way. Check back after publication.':'No graded results in this category yet.'}</p>`;
- const weekly=[...datasets[key]].filter(p=>publishedWeek>0&&p.scores[publishedWeek-1]!==null).sort((a,b)=>(b.scores[publishedWeek-1]??0)-(a.scores[publishedWeek-1]??0));const winner=weekly[0];
- const mainChars=allContenders.flatMap(p=>(p.badges||[]).filter(b=>b.id==='the-main-character').map(b=>({...b,student:p})));
- const currentAces=allContenders.flatMap(p=>(p.badges||[]).filter(b=>b.id==='the-ace'&&(publishedWeek?b.qualifying_exam_id==='week'+publishedWeek:true)).map(b=>({...b,student:p})));
- const unlockedCount=allContenders.filter(p=>(p.badges||[]).some(b=>b.id==='the-unlocked-five')).length;
+ $('#rows').innerHTML=!hasResults?(resultsFailed?'':'<p class="empty">Loading published results…</p>'):filtered.length?visible.map(p=>`<article class="rank-row ${p.rank===1?'leader':''}"><span class="rank-number">${p.rank}</span><span class="avatar">${avatar(p)}</span><div class="rank-info"><h3>${escapeHTML(p.name)}</h3><div class="rank-meta"><span>${escapeHTML(p.id)}</span><span>·</span><span class="student-year">${p.year}</span></div>${renderBadges(p)}</div><div class="rank-total"><strong class="score-value" data-score="${total(p)}">${formatScore(total(p))}</strong><small>pts</small><div class="bar"><span style="width:${total(p)/max*100}%"></span></div></div></article>`).join(''):`<p class="empty">${query?'No contenders match your search.':publishedWeek===0?'The first results are on their way. Check back after publication.':'No graded results in this category yet.'}</p>`;
 
 }
 function renderPagination(total,pages,start,count){
- const nav=$('#leaderboard-pagination');if(!nav)return;nav.hidden=total===0;
+ const nav=$('#leaderboard-pagination');if(!nav)return;nav.hidden=total===0||pages<=1;
  const candidates=new Set([1,pages,leaderboardPage-1,leaderboardPage,leaderboardPage+1]);const numbers=[...candidates].filter(n=>n>0&&n<=pages).sort((a,b)=>a-b);let previous=0;
  const links=numbers.map(n=>{const gap=previous&&n-previous>1?'<span class="page-gap" aria-hidden="true">…</span>':'';previous=n;return gap+`<button type="button" data-board-page="${n}" ${n===leaderboardPage?'aria-current="page"':''} aria-label="Page ${n}">${n}</button>`}).join('');
  nav.innerHTML=`<div class="pagination-controls"><button type="button" class="page-arrow" data-board-page="${leaderboardPage-1}" ${leaderboardPage===1?'disabled':''} aria-label="Previous page">←</button><div class="page-pill">${links}</div><button type="button" class="page-arrow" data-board-page="${leaderboardPage+1}" ${leaderboardPage===pages?'disabled':''} aria-label="Next page">→</button></div>`;
 }
-$('#leaderboard-pagination')?.addEventListener('click',event=>{const button=event.target.closest('[data-board-page]');if(!button||button.disabled)return;leaderboardPage=Number(button.dataset.boardPage);render();const current=$('#leaderboard-pagination').querySelector('[aria-current="page"]');current?.focus({preventScroll:true});$('.ranking-panel').scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});});
+$('#leaderboard-pagination')?.addEventListener('click',event=>{const button=event.target.closest('[data-board-page]');if(!button||button.disabled)return;leaderboardPage=Number(button.dataset.boardPage);render();const current=$('#leaderboard-pagination').querySelector('[aria-current="page"]');current?.focus({preventScroll:true});$('.ranking-panel').scrollIntoView({block:'start',behavior:event.detail===0||matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});});
 function renderBadgesPage(){
  if(!$('#badges-grid')) return;
  const list=(badgeDefinitions&&badgeDefinitions.length)?badgeDefinitions:DEFAULT_BADGE_DEFINITIONS;
@@ -135,11 +136,12 @@ function setupBadgeCarousel(list){
  };
  controls.onclick=event=>{const target=event.target.closest('button');if(!target)return;if(target.dataset.badgeSlide!==undefined)go(Number(target.dataset.badgeSlide));else go(current+Number(target.dataset.badgeStep));};
  grid.onscroll=()=>{if(!mobile())return;cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{const left=grid.getBoundingClientRect().left;let nearest=0;cards.forEach((card,i)=>{if(Math.abs(card.getBoundingClientRect().left-left)<Math.abs(cards[nearest].getBoundingClientRect().left-left))nearest=i;});update(nearest);});};
- grid.onkeydown=event=>{if(!mobile()||event.target!==grid)return;if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();go(current+(event.key==='ArrowRight'?1:-1));}};
- grid.tabIndex=0;grid.setAttribute('aria-label','Badge collection');
+ grid.onkeydown=event=>{if(!mobile()||event.target!==grid)return;if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();go(current+(event.key==='ArrowRight'?1:-1),true);}};
+ grid.tabIndex=mobile()?0:-1;grid.setAttribute('role','region');if(mobile())grid.setAttribute('aria-roledescription','carousel');else grid.removeAttribute('aria-roledescription');grid.setAttribute('aria-label','Badge collection');
+ grid._resizeObserver?.disconnect();let previousWidth=0;grid._resizeObserver=new ResizeObserver(()=>{if(grid.clientWidth&&grid.clientWidth!==previousWidth){previousWidth=grid.clientWidth;grid.tabIndex=mobile()?0:-1;if(mobile())grid.setAttribute('aria-roledescription','carousel');else grid.removeAttribute('aria-roledescription');go(current,true);}});grid._resizeObserver.observe(grid);
  requestAnimationFrame(()=>go(current,true));
 }
-let leaderboardLoadActive=false,lastResultsSignature="";
+let leaderboardLoadActive=false,lastResultsSignature="",hasResults=false,resultsFailed=false;
 async function loadLeaderboard(){
  if(leaderboardLoadActive)return;leaderboardLoadActive=true;
  try{
@@ -147,7 +149,9 @@ async function loadLeaderboard(){
   if(!response.ok)throw Error('Unable to load results.');
   const payload=await response.json();
   const signature=JSON.stringify(payload);
+  resultsFailed=false;$('#results-status').textContent='';$('#rows').setAttribute('aria-busy','false');
   if(signature===lastResultsSignature)return;
+  hasResults=true;
   publishedWeek=payload.published_week||0;
   badgeDefinitions=(payload.badge_definitions&&payload.badge_definitions.length)?payload.badge_definitions.map(b=>({...b,image_url:b.image_url?b.image_url.replace(/^\//,''):`assets/badges/${b.id}.png`})):DEFAULT_BADGE_DEFINITIONS;
   allContenders=payload.participants||[];
@@ -158,27 +162,34 @@ async function loadLeaderboard(){
   });
   boardRevision++;
   if(period!=='all'&&Number(period)>=publishedWeek)period='all';
-  $('#week').innerHTML='<option value="all">Overall / 500</option>'+Array.from({length:publishedWeek},(_,i)=>`<option value="${i}">Week ${i+1}</option>`).join('');
+  $('#week').innerHTML='<option value="all">Overall · '+publishedWeek+' / 5 weeks</option>'+Array.from({length:publishedWeek},(_,i)=>`<option value="${i}">Week ${i+1}</option>`).join('');
   $('#week').value=period;
-  document.querySelector('.demo-pill').textContent=allContenders.length&&allContenders.every(p=>p.sic.startsWith('demo'))?'DEMO STANDINGS':'OFFICIAL STANDINGS';
+  const demoCount=allContenders.filter(p=>p.sic.startsWith('demo')||/\(Demo\)/i.test(p.full_name)).length;
+  document.querySelector('.demo-pill').textContent=demoCount?(demoCount===allContenders.length?'DEMO STANDINGS':'INCLUDES DEMO DATA'):'PUBLISHED STANDINGS';
   document.querySelector('.round-tag').innerHTML=`${publishedWeek?'RESULTS THROUGH WEEK '+publishedWeek:'AWAITING FIRST RESULTS'}`;
   document.querySelector('.arena-round strong').innerHTML=`Week ${String(publishedWeek).padStart(2,'0')} <em>/ 05</em>`;
   document.querySelectorAll('.round-dots i').forEach((dot,i)=>{dot.classList.toggle('completed',i<publishedWeek);dot.classList.toggle('current',i===publishedWeek-1);});
-  document.querySelector('.list-footer>span').textContent='Published results · Equal scores share a rank';
+  document.querySelector('.list-footer>span').textContent=(demoCount?'Includes sample participants · ':'')+'Equal scores share a rank';
   render();
   renderBadgesPage();
   lastResultsSignature=signature;
   if(!$('#leaderboard').hidden)requestAnimationFrame(()=>{try{replayScorecard()}catch(animationError){console.warn('Score animation unavailable',animationError)}});
  }
- catch(error){console.error('Leaderboard load failed',error);lastResultsSignature='';$('#rows').innerHTML='<div class="empty">Unable to load results. <button id="retry-results" type="button">Try again ↗</button></div>';$('#retry-results').addEventListener('click',loadLeaderboard);document.querySelector('.demo-pill').textContent='CONNECTION UNAVAILABLE';}
+ catch(error){
+  resultsFailed=true;console.error('Leaderboard load failed',error);$('#rows').setAttribute('aria-busy','false');
+  $('#results-status').innerHTML=`${hasResults?'Showing the last loaded results. Refresh failed.':'Results could not be loaded.'} <button id="retry-results" type="button">Try again ↗</button>`;
+  if(!hasResults){$('#rows').innerHTML='';$('#count').textContent='Results unavailable';}
+  $('#retry-results').addEventListener('click',loadLeaderboard);
+ }
+
  finally{leaderboardLoadActive=false;}
 }
 document.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{category=b.dataset.cat;document.querySelectorAll('[data-cat]').forEach(x=>x.setAttribute('aria-pressed',x===b));$('#track').hidden=category==='junior';render()}));$('#week').addEventListener('change',e=>{period=e.target.value;render()});$('#track').addEventListener('change',render);$('#search').addEventListener('input',render);render();renderBadgesPage();loadLeaderboard();
 function theme(value){document.documentElement.dataset.theme=value;document.querySelectorAll('button[data-theme]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.theme===value));document.querySelector('meta[name="theme-color"]').content=value==='dark'?'#100c1e':'#f2edff';try{localStorage.setItem('ax-theme',value)}catch(e){}}
 document.querySelectorAll('button[data-theme]').forEach(b=>b.addEventListener('click',()=>theme(b.dataset.theme)));theme(document.documentElement.dataset.theme||'dark');
-const labels={leaderboard:'Leaderboard',badges:'Badges & Achievements',schedule:'Schedule of Examination',about:'About Achievers’ Club'};function renderRoute(){const page=location.hash.slice(1) in labels?location.hash.slice(1):'leaderboard';document.body.dataset.page=page;document.querySelectorAll('.page').forEach(p=>p.hidden=p.id!==page);document.querySelectorAll('[data-page]').forEach(a=>{a.classList.toggle('active',a.dataset.page===page);if(a.dataset.page===page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});$('#page-label').textContent=labels[page];$('#island-title').textContent=labels[page];document.title=`${labels[page]} — AchieveX`;window.scrollTo({top:0,behavior:"instant"});if(page==='badges')renderBadgesPage();}
+const labels={leaderboard:'Leaderboard',badges:'Badges & Achievements',schedule:'Schedule of Examination',about:'About Achievers’ Club'};function renderRoute(moveFocus=false){const page=location.hash.slice(1) in labels?location.hash.slice(1):'leaderboard';document.body.dataset.page=page;document.querySelectorAll('.page').forEach(p=>p.hidden=p.id!==page);document.querySelectorAll('[data-page]').forEach(a=>{a.classList.toggle('active',a.dataset.page===page);if(a.dataset.page===page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});$('#page-label').textContent=labels[page];$('#island-title').textContent=labels[page];document.title=`${labels[page]} — AchieveX`;window.scrollTo({top:0,behavior:"instant"});if(page==='badges')renderBadgesPage();if(moveFocus){const heading=$('#'+page+' h1');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});}}
 let activeTransition;
-function route(){if(!document.startViewTransition||matchMedia('(prefers-reduced-motion: reduce)').matches){renderRoute();return;}activeTransition?.skipTransition();activeTransition=document.startViewTransition(()=>{renderRoute()});activeTransition.updateCallbackDone.then(()=>{if(!$('#leaderboard').hidden)replayScorecard();if(location.hash==='#schedule')animateAgenda();}).catch(()=>{});activeTransition.finished.catch(()=>{});}
+function route(){if(!document.startViewTransition||matchMedia('(prefers-reduced-motion: reduce)').matches){renderRoute(true);return;}activeTransition?.skipTransition();activeTransition=document.startViewTransition(()=>{renderRoute(true)});activeTransition.updateCallbackDone.then(()=>{if(!$('#leaderboard').hidden)replayScorecard();if(location.hash==='#schedule')animateAgenda();}).catch(()=>{});activeTransition.finished.catch(()=>{});}
 window.addEventListener('hashchange',route);renderRoute();
 const island=$('#mobile-island'),islandTrigger=$('#island-trigger'),islandLinks=$('#island-links');
 function setIsland(open,restore=false){island.classList.toggle('expanded',open);islandTrigger.setAttribute('aria-expanded',String(open));islandLinks.hidden=!open;if(restore)islandTrigger.focus();}
@@ -192,19 +203,27 @@ document.querySelectorAll('button[data-theme]').forEach(b=>b.addEventListener('c
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
 function animateBoard(){if(reduceMotion.matches||document.startViewTransition)return;const panel=$('.page:not([hidden])');if(panel)panel.animate([{opacity:.65,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:250,easing:'cubic-bezier(.23,1,.32,1)'});}
 window.addEventListener('hashchange',animateBoard);
-function animateRankings(){if(reduceMotion.matches)return;document.querySelectorAll('.rank-row').forEach((row,i)=>{row.getAnimations().forEach(a=>a.cancel());row.animate([{opacity:.35,transform:'translateY(9px)'},{opacity:1,transform:'translateY(0)'}],{duration:240,delay:Math.min(i,7)*30,easing:'cubic-bezier(.23,1,.32,1)',fill:'backwards'});});}
+function animateRankings(){if(reduceMotion.matches||$('#leaderboard').hidden)return;document.querySelectorAll('.rank-row').forEach((row,i)=>{row.getAnimations().forEach(a=>a.cancel());row.animate([{opacity:.35,transform:'translateY(9px)'},{opacity:1,transform:'translateY(0)'}],{duration:240,delay:Math.min(i,7)*30,easing:'cubic-bezier(.23,1,.32,1)',fill:'backwards'});});}
 document.querySelectorAll('[data-cat],#week,#track').forEach(control=>control.addEventListener('click',e=>{if(e.currentTarget.matches('[data-cat]'))animateRankings()}));
 ['#week','#track'].forEach(selector=>$(selector).addEventListener('change',animateRankings));
 animateBoard();animateRankings();
 
+let scheduleLoaded=false,scheduleFailed=false;
 let scheduleCategory='junior',scheduleData={junior:[],cs:[],core:[]};const scheduleLabels={junior:'Junior category',cs:'Senior / Computer Science',core:'Senior / Core'};
 function renderSchedule(){
  $('#agenda-category').textContent=scheduleLabels[scheduleCategory].toUpperCase();
+ if(scheduleFailed){$('#schedule-list').innerHTML='<p class="empty">The schedule could not be refreshed. <button id="retry-schedule" type="button">Try again ↗</button></p>';$('#retry-schedule').addEventListener('click',loadSchedule);return;}
+ if(!scheduleLoaded){$('#schedule-list').innerHTML='<p class="empty">Loading examination schedule…</p>';return;}
  const entries=scheduleData[scheduleCategory];
- $('#schedule-list').innerHTML=Array.from({length:5},(_,i)=>{const e=entries[i]||{round:i+1,revealed:false};return `<button type="button" class="agenda-row tone-${i%3} ${e.revealed?'revealed':'unrevealed'}" data-round="${i}" ${e.revealed?'':'disabled'}><div class="agenda-round"><span>ROUND</span><b>0${i+1}</b></div><div class="agenda-main"><span>${scheduleLabels[scheduleCategory]}</span><h3>${e.revealed?escapeHTML(e.subject):'The next challenge awaits.'}</h3><p>${e.revealed?'View syllabus & assessment scope ↗':'Subject not yet revealed · Stay ready'}</p></div><div class="agenda-points"><b>100</b><span>POINTS</span></div><div class="agenda-date"><h4>${e.date?escapeHTML(e.date):'DATE<br>AWAITED'}</h4><p>${e.revealed?'SYLLABUS AVAILABLE':'REVEAL COMING SOON'}</p></div><span class="agenda-arrow" aria-hidden="true">${e.revealed?'↗':'⌁'}</span></button>`}).join('');
+ $('#schedule-list').innerHTML=Array.from({length:5},(_,i)=>{const e=entries[i]||{round:i+1,revealed:false};return `<button type="button" class="agenda-row tone-${i%3} ${e.revealed?'revealed':'unrevealed'}" data-round="${i}" ${e.revealed?'':'disabled'}><div class="agenda-round"><span>ROUND</span><b>0${i+1}</b></div><div class="agenda-main"><span>${scheduleLabels[scheduleCategory]}</span><h3>${e.revealed?escapeHTML(e.subject):'Subject reveal coming soon'}</h3><p>${e.revealed?'View syllabus ↗':'Subject to be revealed'}</p></div><div class="agenda-points"><b>100</b><span>POINTS</span></div><div class="agenda-date"><h4>${e.date?escapeHTML(new Intl.DateTimeFormat('en-IN',{day:'numeric',month:'short',year:'numeric'}).format(new Date(e.date+'T12:00:00'))):'Date to be announced'}</h4><p>${e.revealed?'SYLLABUS AVAILABLE':'REVEAL COMING SOON'}</p></div><span class="agenda-arrow" aria-hidden="true">${e.revealed?'↗':'⌁'}</span></button>`}).join('');
  document.querySelectorAll('[data-schedule]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.schedule===scheduleCategory)));
 }
-async function loadSchedule(){try{const r=await fetch('/api/schedule',{cache:'no-store'});if(!r.ok)throw Error('Schedule unavailable');scheduleData=(await r.json()).schedule;renderSchedule()}catch(e){$('#schedule-list').innerHTML='<p class="empty">The schedule is temporarily unavailable. Please refresh to retry.</p>';}}
+async function loadSchedule(){
+ try{const r=await fetch('/api/schedule',{cache:'no-store'});if(!r.ok)throw Error('Schedule unavailable');scheduleData=(await r.json()).schedule;scheduleLoaded=true;scheduleFailed=false;renderSchedule();}
+ catch(e){scheduleFailed=true;renderSchedule();}
+ finally{$('#schedule-list').setAttribute('aria-busy','false');}
+}
+
 document.querySelectorAll('[data-schedule]').forEach(b=>b.addEventListener('click',()=>{scheduleCategory=b.dataset.schedule;renderSchedule()}));renderSchedule();loadSchedule();
 $('#schedule-list').addEventListener('click',event=>{const button=event.target.closest('[data-round]');if(!button)return;const item=scheduleData[scheduleCategory][Number(button.dataset.round)];if(!item?.revealed)return;$('#syllabus-title').textContent=item.subject;$('#syllabus-category').textContent=scheduleLabels[scheduleCategory]+' / Round '+item.round;$('#syllabus-scope').textContent=item.scope||'Syllabus reference';const link=$('#syllabus-link');link.hidden=!item.syllabus_url;if(item.syllabus_url&&new URL(item.syllabus_url).protocol==='https:')link.href=item.syllabus_url;$('#syllabus-dialog').showModal();});
 $('#close-syllabus').addEventListener('click',()=>$('#syllabus-dialog').close());
@@ -239,4 +258,8 @@ document.querySelectorAll('[data-schedule]').forEach(button=>button.addEventList
 window.addEventListener('hashchange',()=>{if(location.hash==='#schedule')animateAgenda()});
 document.querySelectorAll('.about-story,.playbook-grid article,.about-honours,.about-closing').forEach(el=>revealObserver.observe(el));
 
-setInterval(()=>{if(!document.hidden)loadLeaderboard()},30000);window.addEventListener("focus",loadLeaderboard);
+setInterval(()=>{if(!document.hidden&&!$('#leaderboard').hidden)loadLeaderboard()},30000);window.addEventListener("focus",loadLeaderboard);
+
+// Direct access to the main student task without changing the route hash.
+document.querySelector('.standings-jump').addEventListener('click',event=>{document.querySelector('#standings').scrollIntoView({block:'start',behavior:event.detail===0||reduceMotion.matches?'instant':'smooth'});document.querySelector('#search').focus({preventScroll:true});});
+document.querySelector('.skip-link').addEventListener('click',event=>{event.preventDefault();document.querySelector('#skip-preloader')?.click();document.querySelector('#main-content').focus();document.querySelector('#main-content').scrollIntoView({block:'start',behavior:'instant'});});

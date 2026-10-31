@@ -1,1 +1,11 @@
-{"name":"achievex-local","private":true,"scripts":{"dev":"python3 server.py","check":"node --check dist/app.js && node --check dist/admin.js && python3 -m unittest discover -s tests"}}
+{
+  "name": "achievex-local",
+  "private": true,
+  "scripts": {
+    "dev": "python3 server.py",
+    "check": "node --check dist/app.js && node --check dist/admin.js && python3 -m unittest discover -s tests && node scripts/ui-smoke.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.3"
+  }
+}

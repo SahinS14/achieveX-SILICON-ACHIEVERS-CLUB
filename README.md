@@ -81,3 +81,7 @@ Badge assignment is 100% automated and transparent. There is no manual assignmen
 ### Audit and cloud admin sessions
 
 See [AUDIT.md](AUDIT.md) for verified rules, test coverage and operational limits. Cloud admin sessions and atomic login attempt slots use the existing **private** `achievex-config` bucket under `security/`; no additional SQL migration is needed. Keep this bucket private. Periodically delete expired security objects. Logout revokes a durable session; changing `SESSION_SECRET` invalidates all existing sessions. Public badges are calculated on the server from published results, rather than optional award-table records.
+
+### Student UI checks
+
+See [UI_AUDIT.md](UI_AUDIT.md) for the student usability pass and remaining rendered/device checks. Run `npm ci` then `npm run check` to include DOM interaction regression tests alongside Python API tests. DOM tests do not replace visual browser or real-phone testing.

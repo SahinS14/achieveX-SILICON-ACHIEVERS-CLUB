@@ -1,0 +1,218 @@
+/* Student usability pass: final shared rules for readable, reachable controls. */
+:root{--student-caption:#c8bede}
+:root[data-theme=light]{--student-caption:#5f4d70}
+.skip-link{position:fixed;top:12px;left:12px;z-index:11000;transform:translateY(-160%);padding:13px 19px;border-radius:12px;background:var(--text);color:var(--bg)!important;font-size:16px}
+.skip-link:focus{transform:translateY(0)}
+main:focus,.page h1:focus{outline:none}
+:where(button,a,summary,select,input):focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+#leaderboard .page-heading .eyebrow,#badges .achievement-heading .eyebrow,.agenda-heading .eyebrow{font-size:10px;line-height:1.7;letter-spacing:1.3px}
+#leaderboard .page-heading p,#badges .achievement-heading>p{font-size:15px;line-height:1.7}
+.demo-pill{font-size:10px;line-height:1.5;letter-spacing:.6px;max-width:150px;text-align:center}
+.round-tag{font-size:11px;letter-spacing:.6px;line-height:1.5}
+.arena-prize small,.arena-round small{font-size:10px;line-height:1.6;letter-spacing:1px}
+.arena-round strong{font-variant-numeric:tabular-nums}
+.category-tabs button,.schedule-tabs button,select{min-height:44px}
+.category-tabs small{font-size:10px}
+.ranking-head h2{font-size:23px;line-height:1.2}
+.ranking-head p{font-size:12px;line-height:1.7}
+.search-row .search{width:100%;min-height:48px}
+.search-row>span{display:none}
+.search input{font-size:16px;min-height:46px}
+.search input::placeholder{font-size:14px;color:var(--student-caption);opacity:1}
+.search:focus-within{outline:2px solid var(--accent);outline-offset:3px}
+.rank-info{min-width:0;flex:1}
+.rank-info h3{font-size:16px;line-height:1.4;white-space:normal;overflow-wrap:anywhere}
+.rank-meta{font-size:12px;line-height:1.6;flex-wrap:wrap;gap:5px;color:var(--student-caption)}
+.rank-total{flex-shrink:0;font-variant-numeric:tabular-nums}
+.rank-number{font-variant-numeric:tabular-nums}
+.list-labels,.list-footer{font-size:11px;line-height:1.7;letter-spacing:.5px}
+.list-footer{gap:14px;flex-wrap:wrap}
+.student-badges-list{gap:5px;align-items:center}
+.badge-chip{font:500 11px/1.4 Outfit;min-height:32px;padding:5px 8px;max-width:100%;text-align:left;color:var(--text);cursor:pointer}
+.badge-chip-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge-chip-count{font-size:10px}
+.badge-more{min-width:32px;justify-content:center;flex-shrink:0}
+.badge-chip:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.pagination-controls .page-arrow,.page-pill button{width:44px;height:44px;min-width:44px;font-size:15px}
+.page-pill{gap:4px;padding:7px 10px}
+.page-gap{min-width:8px;text-align:center}
+.standings-jump{display:inline-flex;gap:20px;align-items:center;min-height:44px;margin-top:15px;padding:0;border:0;background:none;color:var(--accent);font:500 14px Outfit;text-align:left;cursor:pointer}
+.standings-jump span{font-size:20px}
+.results-status{font:400 13px/1.7 Outfit;color:var(--student-caption);margin:0}
+.results-status:not(:empty){padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--glass);margin:0 0 16px}
+.results-status:empty{display:none}
+#retry-results,#retry-schedule{display:inline-flex;align-items:center;min-height:44px;border:1px solid var(--line);border-radius:24px;padding:9px 16px;background:var(--glass);color:var(--text);font:500 14px Outfit;margin:8px}
+.empty{font-size:15px;line-height:1.8;padding:25px 14px}
+#badge-detail-dialog{width:min(640px,calc(100vw - 32px));max-height:85dvh;overflow:auto;overscroll-behavior:contain;border:1px solid var(--glass-border);border-radius:24px;background:var(--panel);color:var(--text);padding:26px;box-shadow:0 25px 100px #0006}
+#badge-detail-dialog::backdrop{background:#080510bb;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.badge-dialog-top{display:flex;align-items:start;justify-content:space-between;gap:16px;margin-bottom:20px}
+.badge-dialog-top h2{font:600 25px/1.3 Outfit;letter-spacing:-.5px;margin:4px 0;overflow-wrap:anywhere}
+#close-badge-detail{display:grid;place-items:center;width:44px;height:44px;flex-shrink:0;border-radius:50%;border:1px solid var(--line);color:var(--text);background:var(--glass);font-size:25px}
+.badge-evidence{display:flex;align-items:start;gap:18px;border-top:1px solid var(--line);padding:20px 0}
+.badge-evidence>img{width:64px;height:64px;object-fit:contain;flex-shrink:0}
+.badge-evidence h3{font:600 21px/1.3 Outfit;margin:0 0 10px}
+.badge-evidence p,.badge-evidence li{font:400 14px/1.75 Outfit;color:var(--student-caption)}
+.badge-evidence ul{padding-left:18px}
+#badges .honours-edition{font-size:10px;line-height:1.7;letter-spacing:.7px;white-space:normal}
+#badges .honour-index{font-size:11px}
+#badges .honour-category{font-size:10px;line-height:1.5;letter-spacing:1.1px}
+#badges .badge-card-desc,#badges .honour-rule .badge-card-criteria-text{font-size:14px;line-height:1.75}
+#badges .honour-rule summary{font-size:13px;min-height:44px}
+#badges .badges-gallery-header h2{font-size:17px}
+#badges .badge-carousel-status{font-size:12px}
+.sidebar nav b{white-space:normal;font-size:16px;line-height:1.4}
+.sidebar .sidebar-season,.sidebar .sidebar-season b{font-size:13px;line-height:1.6}
+.sidebar .sidebar-manifesto>span{font-size:10px;line-height:1.6;letter-spacing:1px}
+.sidebar .theme-switch button{min-height:44px}
+.sidebar .brand-type small{font-size:9px;letter-spacing:.6px}
+.agenda-status{font-size:10px;line-height:1.7;letter-spacing:.7px;white-space:normal}
+.agenda-context>span{font-size:11px;line-height:1.6;letter-spacing:1px}
+.agenda-row:disabled{opacity:1}
+.agenda-main>span{font-size:12px;line-height:1.6}
+.agenda-main p,.agenda-date p{font-size:12px;line-height:1.6;color:#eee7f5}
+.agenda-date h4{font-size:19px;line-height:1.35;letter-spacing:0}
+.agenda-date{max-width:170px}
+.agenda-round span{font-size:10px;line-height:1.5}
+#about :is(.about-story-copy p,.playbook-grid p,.club-membership>p,.flow-card p){font-size:15px;line-height:1.85}
+#about :is(.about-eyeline,.about-eyeline a,.about-lead>span,.about-facts p,.eyebrow,.flow-step-tag,.about-closing>span){font-size:10px;line-height:1.8;letter-spacing:.8px}
+#about .about-univ-link{min-height:44px}
+#about .about-facts{gap:22px}
+.club-footer .footer-kicker,.club-footer .footer-destinations a>span{font-size:10px;line-height:1.7;letter-spacing:1px}
+.club-footer .footer-identity p{font-size:13px;line-height:1.7}
+.club-footer .footer-destinations a{min-height:60px}
+.club-footer .footer-baseline{font-size:12px;line-height:1.7}
+.site-preloader>button{min-height:44px}
+:root[data-theme=light] .mobile-island .island-links a div,:root[data-theme=light] .mobile-island .island-links a.active div{color:#352145!important;text-shadow:none}
+:root[data-theme=light] .mobile-island .island-links a small,:root[data-theme=light] .mobile-island .island-links a.active small{color:#5f4b70!important}
+:root[data-theme=light] .mobile-island .island-links a.active{background:#e6d8f3!important;border-color:#bfa3d5!important;box-shadow:inset 0 1px #fff!important}
+:root[data-theme=light] .search input::placeholder{color:#655074}
+:root[data-theme=light] .rank-row .rank-number{color:#5a426d}
+:root[data-theme=light] .agenda-row .agenda-main :is(span,p),:root[data-theme=light] .agenda-row .agenda-date :is(h4,p){color:#3c293f}
+:root[data-theme=light] .agenda-row .agenda-round :is(span,b){color:#fff}
+:root[data-theme=light] #about .about-univ-link{color:#4b365c}
+@media(min-width:701px) and (max-width:1000px){
+ .agenda-row{display:grid;grid-template-columns:65px minmax(0,1fr) 100px;gap:14px;padding:18px 14px 18px 0}
+ .agenda-round{width:65px;margin:-18px 0}
+ .agenda-main h3{font-size:23px;overflow-wrap:anywhere}
+ .agenda-date{width:100px}
+ .agenda-date h4{font-size:17px}
+ .agenda-arrow{display:none}
+ .ranking-head{flex-wrap:wrap}
+ .ranking-head select{max-width:100%}
+ .pagination-controls{gap:8px}
+ .page-pill{gap:0;padding:6px}
+ .page-pill button{min-width:36px;width:36px}
+ .sidebar .brand-type small{font-size:8px}
+}
+@media(max-width:700px){
+ main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+ .mobile-island{max-height:calc(100dvh - 28px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+ .mobile-island .island-trigger{width:44px;min-width:44px;height:44px;flex-basis:44px}
+ .mobile-island .island-top{height:44px}
+ .mobile-island .island-brand{min-height:44px}
+ .mobile-island .island-links a div{font-size:15px;line-height:1.4}
+ .mobile-island .island-links small{font-size:12px;line-height:1.5}
+ #leaderboard .page-heading{min-height:190px}
+ #leaderboard .page-heading .eyebrow{max-width:62%;font-size:10px;letter-spacing:.8px}
+ #leaderboard .page-heading h1{font-size:clamp(34px,9.5vw,43px)}
+ #leaderboard .page-heading p{font-size:14px;max-width:25ch}
+ #leaderboard .heading-art{opacity:.3}
+ #leaderboard .demo-pill{font-size:9px;max-width:108px;padding:6px 9px;line-height:1.5}
+ .filters{flex-wrap:wrap;gap:10px}
+ .category-tabs{flex:1;gap:3px;min-width:0}
+ .category-tabs button{flex:1;font-size:15px;padding:10px 15px;min-height:44px}
+ .filters #track{font-size:16px;max-width:45%;min-height:44px}
+ .filters .round-tag{flex-basis:100%;margin:0;font-size:11px}
+ .arena-prize small,.arena-round small{font-size:9px;line-height:1.7;letter-spacing:.5px}
+ .arena-status{gap:10px}
+ .arena-prize,.arena-round{min-width:0}
+ .arena-prize>div,.arena-round>div{min-width:0}
+ .arena-prize b{font-size:11px;line-height:1.6}
+ .arena-round strong{font-size:24px}
+ .arena-round strong em{font-size:13px}
+ .ranking-head{align-items:start;flex-wrap:wrap;gap:12px}
+ .ranking-head h2{font-size:22px}
+ .ranking-head p{font-size:12px;line-height:1.6;max-width:30ch}
+ .ranking-head select{font-size:16px;min-height:44px;max-width:100%;padding:10px 12px}
+ .search-row .search{width:100%;margin:0;min-height:48px}
+ .search input{font-size:16px}
+ .search input::placeholder{font-size:14px}
+ .rank-row,.rank-row.leader{gap:8px;padding:14px 10px;align-items:center}
+ .rank-row .rank-number{width:29px;min-width:29px;font-size:28px;letter-spacing:-1px;color:#c6b3dc}
+ .rank-row .avatar{width:34px;height:34px;flex-shrink:0}
+ .rank-info h3{font-size:14px;line-height:1.4;letter-spacing:0;white-space:normal}
+ .rank-row .rank-meta{font-size:11px;line-height:1.6;gap:4px}
+ .rank-row .rank-total{min-width:42px;max-width:64px}
+ .rank-row .rank-total strong{font-size:21px;line-height:1.3}
+ .rank-total small{display:block;font-size:10px;line-height:1.5;color:var(--student-caption)}
+ .student-badges-list{gap:4px;margin-top:8px}
+ .badge-chip{font-size:10px;min-height:36px;padding:5px 7px}
+ .badge-chip-icon{width:17px;height:17px}
+ .badge-chip-name{max-width:17ch}
+ .badge-more{min-height:36px;min-width:36px}
+ .list-labels,.list-footer{font-size:10px;line-height:1.7;letter-spacing:.5px}
+ .pagination-controls{gap:8px;width:100%;flex-wrap:wrap}
+ .page-pill{flex:0 1 auto;padding:5px 3px;gap:0;max-width:100%}
+ .page-pill button{width:36px;min-width:36px;height:44px;font-size:14px}
+ .pagination-controls .page-arrow{height:44px;width:44px;min-width:44px;font-size:24px}
+ .pagination-controls .page-gap{font-size:12px;padding:0;min-width:8px}
+ #badges .achievement-heading .eyebrow{font-size:10px}
+ #badges .honours-edition{font-size:9px;max-width:90px;letter-spacing:.5px}
+ #badges .achievement-heading>p{font-size:14px}
+ #badges .honour-category{font-size:10px}
+ #badges .badge-card-desc,#badges .honour-rule .badge-card-criteria-text{font-size:14px}
+ .badge-carousel-controls{grid-template-columns:44px minmax(0,1fr) 44px;max-width:100%;gap:4px}
+ .badge-carousel-dots button{width:24px;min-width:20px}
+ #badge-detail-dialog{padding:22px 18px;max-height:85dvh}
+ .badge-dialog-top h2{font-size:22px}
+ .badge-evidence{flex-direction:column;align-items:center}
+ .badge-evidence>div{width:100%}
+ #badges .minimal-badge{min-height:380px}
+ .agenda-heading .eyebrow{font-size:10px}
+ .agenda-heading>p{font-size:15px!important;color:var(--text)!important}
+ .schedule-tabs{gap:7px}
+ .schedule-tabs button{font-size:13px;min-height:46px;padding:10px 7px}
+ .agenda-status{font-size:10px;margin-top:14px}
+ .agenda-context>span{font-size:11px}
+ .agenda-row{display:grid;grid-template-columns:54px minmax(0,1fr);gap:14px;min-height:145px;padding:17px 14px 17px 0;align-items:start}
+ .agenda-row .agenda-round{position:static;grid-column:1;grid-row:1/3;margin:-17px 0;width:54px;min-height:0;align-self:stretch}
+ .agenda-round span{font-size:9px;letter-spacing:.5px}
+ .agenda-row .agenda-main{padding:0;min-width:0;grid-column:2}
+ .agenda-main>span{font-size:11px}
+ .agenda-row .agenda-main h3,.agenda-row.unrevealed .agenda-main h3{font-size:21px;line-height:1.25;max-width:none;overflow-wrap:anywhere}
+ .agenda-row .agenda-main p{font-size:12px;line-height:1.6;max-width:none}
+ .agenda-row .agenda-date{grid-column:2;width:auto;max-width:none;text-align:left}
+ .agenda-row .agenda-date h4{font-size:14px;line-height:1.6;margin:0}
+ .agenda-row .agenda-date p{display:none}
+ #about .about-eyeline{flex-wrap:wrap;gap:12px}
+ #about :is(.about-story-copy p,.playbook-grid p,.club-membership>p,.flow-card p){font-size:15px}
+ #about .about-facts{grid-template-columns:1fr;gap:0}
+ #about .about-facts>div{padding:20px 0;border-right:0;border-bottom:1px solid var(--line)}
+ #about .about-facts>div:last-child{border-bottom:0}
+ #about .about-facts p{font-size:10px;line-height:1.7;max-width:none}
+ .club-footer .footer-destinations a>span,.club-footer .footer-kicker{font-size:10px;line-height:1.7}
+ .club-footer .footer-destinations{gap:12px}
+ .club-footer .footer-identity p{font-size:13px}
+ .club-footer .footer-baseline{font-size:11px}
+}
+@media(max-width:360px){
+ .pagination-controls{gap:5px}
+ .page-pill button{width:30px;min-width:30px}
+ .page-pill{padding:5px 2px}
+ .pagination-controls .page-arrow{width:40px;min-width:40px}
+ .rank-row .avatar{width:30px;height:30px}
+ .rank-row,.rank-row.leader{padding-left:8px;padding-right:8px;gap:6px}
+ .rank-row .rank-number{width:26px;min-width:26px;font-size:25px}
+ .arena-prize small,.arena-round small{font-size:9px;letter-spacing:0}
+ .arena-status{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+/* Solid ribbon labels remain legible against every schedule colour. */
+:root .agenda-row{--ribbon:#b62360}
+:root .agenda-row.tone-1{--ribbon:#42654a}
+:root .agenda-row.tone-2{--ribbon:#9c4b1e}
+
+@media(hover:none){.badge-chip:hover{transform:none}.island-trigger:hover{background:var(--glass)}}
