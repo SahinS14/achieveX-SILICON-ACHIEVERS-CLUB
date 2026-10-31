@@ -59,7 +59,7 @@ async function audit(width,initialOffline=false){
   }
   assert.equal(d.querySelectorAll('.rank-row').length,15,'first page');
   assert.equal(d.querySelector('.demo-pill'),null,'no demo status tag');
-  assert.equal(d.querySelector('.list-footer>span').textContent,'Equal scores share a rank');
+  assert.equal(d.querySelector('.list-footer>span').textContent,'Tied scores share a rank · Next rank continues consecutively');
   assert.equal(d.querySelector('#rows').getAttribute('aria-busy'),'false');
   assert.match(d.querySelector('.rank-row').textContent,/Student 1/,'cumulative leader uses every published week');
   assert.equal(d.querySelector('.rank-row .score-value').textContent,'292');
@@ -90,6 +90,19 @@ async function audit(width,initialOffline=false){
   w.location.hash='#badges';w.renderRoute(true);assert.equal(d.querySelector('#badges').hidden,false);assert.equal(d.activeElement.tagName,'H1');
   assert.equal(d.querySelectorAll('#badges-grid .minimal-badge').length,7);
   d.querySelector('[data-badge-slide="6"]').click();assert.equal(d.querySelector('.badge-carousel-status').textContent,'7 / 7');assert.equal(d.querySelector('[data-badge-step="1"]').disabled,true);
+
+  d.querySelector('[data-cat="junior"]').click();
+  participants[0].scores=[100,100,100,null,null];participants[1].scores=[100,100,100,null,null];participants[2].scores=[99,99,99,null,null];participants[3].scores=[99,99,99,null,null];
+  await w.loadLeaderboard();
+  const ranks=()=>[...d.querySelectorAll('.rank-row .rank-number')].slice(0,5).map(el=>parseInt(el.textContent));
+  assert.deepEqual(ranks(),[1,1,2,2,3],'overall dense ranks');
+  assert.equal(d.querySelectorAll('.rank-tie').length,4,'tie markers');
+  week.value='0';week.dispatchEvent(new w.Event('change'));assert.deepEqual(ranks(),[1,1,2,2,3],'weekly dense ranks');
+  search.value='demo00001';search.dispatchEvent(new w.Event('input'));assert.equal(d.querySelector('.rank-number').textContent,'1TIE','search retains shared category rank');
+  search.value='';week.value='all';week.dispatchEvent(new w.Event('change'));
+  participants.filter(p=>p.track==='junior').forEach(p=>p.scores=[50,50,50,null,null]);await w.loadLeaderboard();
+  d.querySelector('[data-board-page="2"]').click();assert.ok([...d.querySelectorAll('.rank-number')].every(el=>el.textContent==='1TIE'),'ties continue across pagination');
+  d.querySelector('[data-cat="senior"]').click();
   failures=true;await w.loadLeaderboard();assert.equal(d.querySelectorAll('.rank-row').length,1,'retain last results');assert.match(d.querySelector('#results-status').textContent,/last loaded results/);
   failures=false;await w.loadLeaderboard();assert.equal(d.querySelector('#results-status').textContent,'');
   failures=true;await w.loadSchedule();assert.ok(d.querySelector('#retry-schedule'));

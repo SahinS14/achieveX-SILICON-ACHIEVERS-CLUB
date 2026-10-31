@@ -265,3 +265,15 @@ main:focus,.page h1:focus{outline:none}
  .mobile-island .island-links a.menu-option .menu-option-copy{text-shadow:none}
  :root[data-theme=light] .mobile-island .menu-options-heading>small{color:#5c426e!important}
 }
+
+/* Dense ranks communicate ties without skipping subsequent positions. */
+.rank-row .rank-number{flex-direction:column;gap:4px;height:auto;min-height:42px;letter-spacing:-.5px}
+.rank-row .rank-number .rank-tie{font:600 8px/1.2 Outfit,sans-serif;letter-spacing:1px;color:var(--accent);display:block}
+.championship-rank-rule{display:grid;grid-template-columns:1fr 1.3fr;gap:40px;padding:38px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:30px}
+.championship-rank-rule h2{font:600 clamp(28px,3vw,42px)/1.12 Outfit;letter-spacing:-1px;margin:17px 0 0}
+.championship-rank-rule p{font:400 15px/1.8 Outfit;color:var(--muted);margin:0 0 18px}
+.rank-rule-example{display:flex;gap:10px;margin:24px 0}
+.rank-rule-example>span{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;width:56px;height:66px;border:1px solid var(--line);border-radius:14px;background:var(--glass);font:600 27px/1 Outfit;color:var(--text);font-variant-numeric:tabular-nums}
+.rank-rule-example>span:nth-child(-n+2){background:color-mix(in srgb,var(--accent) 12%,var(--panel));border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.rank-rule-example small{font:600 8px/1.2 Outfit;letter-spacing:1px;color:var(--accent)}
+@media(max-width:700px){.championship-rank-rule{grid-template-columns:1fr;gap:23px;padding:28px 0}.rank-row .rank-number .rank-tie{font-size:8px;letter-spacing:.7px}.championship-rank-rule .eyebrow{font-size:10px;line-height:1.6}}
