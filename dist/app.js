@@ -191,48 +191,9 @@ function renderBadgesPage(){
  if(!$('#badges-grid')) return;
  const list=(badgeDefinitions&&badgeDefinitions.length)?badgeDefinitions:DEFAULT_BADGE_DEFINITIONS;
  $('#badges-grid').innerHTML=list.map((b,index)=>{
-  const earners=allContenders.filter(p=>(p.badges||[]).some(x=>x.id===b.id));
-  return `<article class="badge-card minimal-badge"><div class="honour-art"><span class="honour-index">0${index+1}</span><img src="${escapeHTML(b.image_url)}" alt="${escapeHTML(b.name)}" class="badge-card-image"></div><div class="honour-copy"><span class="honour-category">${b.category==='ranking'?'PERFORMANCE':'MILESTONE'}</span><h3 class="badge-card-title">${escapeHTML(b.name)}</h3><p class="badge-card-desc">${escapeHTML(b.description)}</p><details class="honour-rule"><summary>How it’s earned <span>＋</span></summary><p class="badge-card-criteria-text">${escapeHTML(b.criteria)}</p></details></div><div class="badge-card-holders"><strong>${earners.length.toLocaleString('en-IN')}</strong><span>CONTENDERS<br>RECOGNISED</span></div></article>`;
+  return `<article class="badge-card minimal-badge"><div class="honour-art"><span class="honour-index">0${index+1}</span><img src="${escapeHTML(b.image_url)}" alt="${escapeHTML(b.name)}" class="badge-card-image"></div><div class="honour-copy"><span class="honour-category">${b.category==='ranking'?'PERFORMANCE':'MILESTONE'}</span><h3 class="badge-card-title">${escapeHTML(b.name)}</h3><p class="badge-card-desc">${escapeHTML(b.description)}</p><details class="honour-rule"><summary>How it’s earned <span>＋</span></summary><p class="badge-card-criteria-text">${escapeHTML(b.criteria)}</p></details></div></article>`;
  }).join('');
- updateStudentBadgeStatus();
 }
-function updateStudentBadgeStatus(){
- const container=$('#badge-student-status');
- if(!container) return;
- const query=($('#badge-search')?.value||'').trim().toLowerCase();
- let student=null;
- if(query){student=allContenders.find(p=>p.sic.toLowerCase()===query||p.full_name.toLowerCase().includes(query));}
- else if(allContenders.length){student=allContenders[0];}
- if(!student){container.innerHTML=`<p class="empty">${query?'No student found matching "'+escapeHTML(query)+'". Enter an exact SIC or student name.':'Enter your SIC or name above to view your earned achievements and live progress.'}</p>`;return;}
- const earnedMap=new Map();(student.badges||[]).forEach(b=>earnedMap.set(b.id,b));
- const N=publishedWeek,scores=student.scores||[];
- const list=(badgeDefinitions&&badgeDefinitions.length)?badgeDefinitions:DEFAULT_BADGE_DEFINITIONS;
- const badgeProgress=list.map(b=>{
-  const earned=earnedMap.get(b.id);let progressText='',percent=0;
-  if(b.id==='the-main-character'){
-   if(N>=1){const valid=scores.slice(0,N).filter(s=>s!==null);if(valid.length===N){const avg=valid.reduce((a,c)=>a+c,0)/N;progressText=`Average: ${formatScore(avg)}% across ${N}/${N} completed exams.`;percent=earned?100:Math.min(Math.round(avg),95);}else{progressText=`${valid.length}/${N} completed exams (all required to qualify).`;percent=Math.round((valid.length/N)*100);}}
-   else{progressText='Awaiting publication of weekly exam results.';percent=0;}
-  }else if(b.id==='the-ace'){
-   const valid=scores.filter(s=>s!==null),best=valid.length?Math.max(...valid):0;progressText=`Personal best weekly score: ${formatScore(best)}% (Highest score in any weekly exam).`;percent=earned?100:Math.min(Math.round(best),95);
-  }else if(b.id==='the-glow-up'){
-   let maxDelta=0;for(let i=1;i<scores.length;i++){if(scores[i]!==null&&scores[i-1]!==null&&scores[i]>scores[i-1]){maxDelta=Math.max(maxDelta,scores[i]-scores[i-1]);}}
-   progressText=maxDelta>0?`Max improvement: +${formatScore(maxDelta)} pts between consecutive exams.`:'No positive consecutive exam improvement recorded yet.';percent=earned?100:Math.min(Math.round(maxDelta*2),90);
-  }else if(b.id==='on-fire'){
-   let maxStreak=0,curStreak=0;scores.forEach(s=>{if(s!==null&&s>=80){curStreak++;maxStreak=Math.max(maxStreak,curStreak);}else{curStreak=0;}});
-   progressText=`${Math.min(maxStreak,3)}/3 consecutive weekly exams with score >= 80%.`;percent=earned?100:Math.round((Math.min(maxStreak,3)/3)*100);
-  }else if(b.id==='flawless'){
-   const valid=scores.filter(s=>s!==null),best=valid.length?Math.max(...valid):0;progressText=best===100?'Perfect 100% achieved!':`Best score: ${formatScore(best)}% (Need 100%).`;percent=earned?100:Math.round(best);
-  }else if(b.id==='the-comeback-arc'){
-   let eligibleLow=scores.some(s=>s!==null&&s<50);
-   progressText=earned?'Remarkable recovery achieved (+>=20 pts from <50%)!':(eligibleLow?'Low scoring exam (<50%) recorded. Score +20 pts higher on next consecutive exam to unlock.':'Requires a score <50% followed by >=20 pts jump.');percent=earned?100:(eligibleLow?50:0);
-  }else if(b.id==='the-unlocked-five'){
-   const attended=scores.filter(s=>s!==null).length;progressText=`${attended}/5 exams verified with active participation or score.`;percent=Math.round((attended/5)*100);
-  }
-  return {...b,earned:Boolean(earned),award_date:earned?.award_date,evidence:earned?.evidence,count:earned?.count||(earned?1:0),progressText,percent};
- });
- container.innerHTML=`<div class="student-achieve-summary"><div class="student-badge-header"><div><h3>${escapeHTML(student.full_name)} <span class="student-year">${escapeHTML(student.sic)}</span></h3><p class="achievement-summary-copy">${badgeProgress.filter(b=>b.earned).length} of 7 Badges Unlocked · Total Score: ${formatScore(total(student))} pts</p></div></div><div class="student-badge-list">${badgeProgress.map(b=>`<article class="student-badge-card ${b.earned?'is-earned':''}"><img src="${escapeHTML(b.image_url)}" alt="${escapeHTML(b.name)}" class="student-badge-thumb"><div class="student-badge-info"><div class="student-badge-header"><h4>${escapeHTML(b.name)} ${escapeHTML(b.icon)} ${b.count>1?`<b class="badge-chip-count">×${b.count}</b>`:''}</h4><span class="badge-status-tag ${b.earned?'tag-earned':'tag-pending'}">${b.earned?'Earned':'In Progress'}</span></div><p class="student-badge-evidence">${b.earned?`<b>Unlocked ${escapeHTML(b.award_date)}:</b> ${escapeHTML(b.evidence||b.criteria)}`:escapeHTML(b.criteria)}</p><div class="student-badge-progress"><span>${escapeHTML(b.progressText)}</span><div class="badge-progress-bar"><span style="width:${b.percent}%"></span></div></div></div></article>`).join('')}</div></div>`;
-}
-$('#badge-search')?.addEventListener('input',updateStudentBadgeStatus);
 let leaderboardLoadActive=false,lastResultsSignature="";
 async function loadLeaderboard(){
  if(leaderboardLoadActive)return;leaderboardLoadActive=true;

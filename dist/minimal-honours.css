@@ -49,3 +49,9 @@
 .instagram-label{display:inline-flex;align-items:center;gap:8px}.instagram-label svg{width:17px;height:17px;flex-shrink:0}.club-footer .footer-destinations a b .instagram-label{font:450 15px/1.5 Outfit;color:var(--text);letter-spacing:0}
 :root[data-theme=light] .club-footer .footer-destinations a b .instagram-label{color:#493356}
 @media(max-width:700px){.club-footer .footer-destinations a b .instagram-label{font-size:14px}.instagram-label svg{width:16px;height:16px}}
+
+#badges .minimal-badge{grid-template-columns:135px minmax(0,1fr);gap:35px}#badges .honour-copy{max-width:720px}#badges .honour-rule .badge-card-criteria-text{max-width:680px}
+.site-preloader{display:none}.site-preloader.is-loading{position:fixed;inset:0;z-index:10000;background:#ffbe0b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#32230b;transition:opacity 180ms ease}.site-preloader>img{width:min(480px,90vw);height:auto;max-height:65svh;object-fit:contain}.loader-wordmark{font:750 25px Outfit;letter-spacing:-.8px}.loader-caption{font:500 8px 'Plus Jakarta Sans';letter-spacing:1.8px;text-transform:uppercase}.site-preloader>button{font:500 12px Outfit;color:#32230b;border:1px solid #523b2333;border-radius:25px;background:transparent;min-height:40px;padding:9px 18px;margin-top:20px;cursor:pointer}.site-preloader.is-finished{opacity:0;pointer-events:none}.site-preloader>button:focus-visible{outline:2px solid #32230b;outline-offset:4px}
+@media(max-width:1100px) and (min-width:701px){#badges .minimal-badge{grid-template-columns:100px minmax(0,1fr);gap:25px}}
+@media(max-width:700px){#badges .minimal-badge{grid-template-columns:76px minmax(0,1fr);gap:18px}.site-preloader>img{width:100%;max-height:55svh}}
+@media(prefers-reduced-motion:reduce){.site-preloader>img{display:none}.site-preloader.is-loading{transition:none;gap:17px}}
