@@ -15,7 +15,9 @@ def read(root,url,key):
         try:
             with urlopen(Request(url+'/storage/v1/object/achievex-config/schedule.json',headers={'apikey':key}),timeout=20) as r:return json.load(r)
         except HTTPError as e:
-            if e.code in (400,404):return defaults()
+            try:detail=json.loads(e.read())
+            except ValueError:detail={}
+            if e.code==404 or str(detail.get('statusCode'))=='404':return defaults()
             raise RuntimeError('Unable to read schedule from Supabase Storage.') from e
         except URLError as e:raise RuntimeError('Schedule connection unavailable.') from e
     path=root/'.data'/'schedule.json'

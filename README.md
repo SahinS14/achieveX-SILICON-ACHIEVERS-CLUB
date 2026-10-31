@@ -77,3 +77,7 @@ AchieveX features seven automated achievement badges calculated directly from ve
 
 Badge assignment is 100% automated and transparent. There is no manual assignment by administrators or developers.
 
+
+### Audit and cloud admin sessions
+
+See [AUDIT.md](AUDIT.md) for verified rules, test coverage and operational limits. Cloud admin sessions and atomic login attempt slots use the existing **private** `achievex-config` bucket under `security/`; no additional SQL migration is needed. Keep this bucket private. Periodically delete expired security objects. Logout revokes a durable session; changing `SESSION_SECRET` invalidates all existing sessions. Public badges are calculated on the server from published results, rather than optional award-table records.

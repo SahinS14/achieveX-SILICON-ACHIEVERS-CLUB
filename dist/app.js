@@ -1,66 +1,66 @@
 const DEFAULT_BADGE_DEFINITIONS = [
   {
-    id: 'the-main-character',
-    name: 'The Main Character',
-    icon: '👑',
-    category: 'ranking',
-    image_url: 'assets/badges/the-main-character.png',
-    description: 'Overall AchieveX champion with the highest cumulative performance across weekly exams.',
-    criteria: 'Highest cumulative average percentage across all completed weekly exams (1 through N). Requires participation in every published exam. Tied highest scorers jointly receive the badge.'
+    "id": "the-main-character",
+    "name": "The Main Character",
+    "icon": "👑",
+    "description": "Current category leader by published cumulative score; final champion after Week 5.",
+    "category": "ranking",
+    "criteria": "Highest cumulative score within your category across published weeks. Missing scores count as zero; at least one graded result is required. Ties share the badge.",
+    "image_url": "/assets/badges/the-main-character.png"
   },
   {
-    id: 'the-ace',
-    name: 'The Ace',
-    icon: '⚡',
-    category: 'ranking',
-    image_url: 'assets/badges/the-ace.png',
-    description: 'Highest score in any single weekly exam.',
-    criteria: 'Attain the highest individual percentage score in any published weekly exam round across the arena.'
+    "id": "the-ace",
+    "name": "The Ace",
+    "icon": "⚡",
+    "description": "Highest scorer in an individual weekly exam.",
+    "category": "ranking",
+    "criteria": "Highest score in your category for each published weekly exam. Ties share the badge; multiple weekly awards are retained.",
+    "image_url": "/assets/badges/the-ace.png"
   },
   {
-    id: 'the-glow-up',
-    name: 'The Glow Up',
-    icon: '📈',
-    category: 'ranking',
-    image_url: 'assets/badges/the-glow-up.png',
-    description: 'Largest positive score jump between consecutive rounds.',
-    criteria: 'Achieved the largest single improvement in score between any two consecutive weekly exams (Week k - Week k-1 > 0).'
+    "id": "the-glow-up",
+    "name": "The Glow Up",
+    "icon": "📈",
+    "description": "Biggest improvement compared with the previous weekly exam.",
+    "category": "ranking",
+    "criteria": "Largest positive gain in your category for each consecutive published exam pair. Both scores must be graded. Ties share the badge.",
+    "image_url": "/assets/badges/the-glow-up.png"
   },
   {
-    id: 'on-fire',
-    name: 'On Fire',
-    icon: '🔥',
-    category: 'milestone',
-    image_url: 'assets/badges/on-fire.png',
-    description: 'Scored 80% or higher in 3 consecutive weekly exams.',
-    criteria: 'Maintained a score of 80% (80/100) or higher across at least 3 consecutive weekly exams.'
+    "id": "on-fire",
+    "name": "On Fire",
+    "icon": "🔥",
+    "description": "Consistently scores at least 80% across three consecutive weekly exams.",
+    "category": "milestone",
+    "criteria": "Score 80% or higher in any three consecutive finalized weekly exams.",
+    "image_url": "/assets/badges/on-fire.png"
   },
   {
-    id: 'flawless',
-    name: 'Flawless',
-    icon: '💎',
-    category: 'milestone',
-    image_url: 'assets/badges/flawless.png',
-    description: 'Scored a perfect 100% in any weekly exam.',
-    criteria: 'Achieved a perfect score of 100/100 in at least one verified weekly exam.'
+    "id": "flawless",
+    "name": "Flawless",
+    "icon": "💎",
+    "description": "Achieved a perfect score in a weekly exam.",
+    "category": "milestone",
+    "criteria": "Achieve a perfect 100% score in any verified weekly exam.",
+    "image_url": "/assets/badges/flawless.png"
   },
   {
-    id: 'the-comeback-arc',
-    name: 'The Comeback Arc',
-    icon: '🚀',
-    category: 'milestone',
-    image_url: 'assets/badges/the-comeback-arc.png',
-    description: 'Scored below 50% in an exam, then improved by 20+ points in the very next consecutive exam.',
-    criteria: 'Scored < 50% in round k, followed immediately by an improvement of at least 20 points in round k+1.'
+    "id": "the-comeback-arc",
+    "name": "The Comeback Arc",
+    "icon": "🚀",
+    "description": "Makes a remarkable recovery after a low scoring exam.",
+    "category": "milestone",
+    "criteria": "Score strictly below 50% in one exam and improve by at least 20 percentage points in the next exam.",
+    "image_url": "/assets/badges/the-comeback-arc.png"
   },
   {
-    id: 'the-unlocked-five',
-    name: 'The Unlocked Five',
-    icon: '🔒',
-    category: 'milestone',
-    image_url: 'assets/badges/the-unlocked-five.png',
-    description: 'Participated in all 5 weekly exams.',
-    criteria: 'Demonstrated consistent championship commitment by participating in all five weekly exams of AchieveX.'
+    "id": "the-unlocked-five",
+    "name": "The Unlocked Five",
+    "icon": "🔒",
+    "description": "Has graded results in all five published weekly exams.",
+    "category": "milestone",
+    "criteria": "All five weeks must be published and graded. A graded zero counts; a blank score does not. Scores serve as the participation record.",
+    "image_url": "/assets/badges/the-unlocked-five.png"
   }
 ];
 
@@ -79,95 +79,6 @@ function renderBadges(p){
      <span class="badge-chip-name">${escapeHTML(b.name)}${b.count>1?` <b class="badge-chip-count">×${b.count}</b>`:''}</span>
    </span>
  `).join('')}</div>`;
-}
-
-function computeContenderBadges(participants, pubWeek){
- if(!participants||!participants.length) return;
- const N=pubWeek||0;
- let bestAvg=-1; const avgMap=new Map();
- if(N>=1){
-  participants.forEach(p=>{
-   const valid=(p.scores||[]).slice(0,N).filter(s=>s!==null);
-   if(valid.length===N){
-    const avg=valid.reduce((a,b)=>a+b,0)/N;
-    avgMap.set(p.sic,avg);
-    if(avg>bestAvg) bestAvg=avg;
-   }
-  });
- }
- let maxSingle=-1; const topAces=new Map();
- participants.forEach(p=>{
-  (p.scores||[]).slice(0,N||5).forEach((score,idx)=>{
-   if(score!==null){
-    if(score>maxSingle){
-     maxSingle=score; topAces.clear();
-     topAces.set(p.sic,{exam:`Week ${idx+1}`,score});
-    }else if(score===maxSingle&&maxSingle>0){
-     topAces.set(p.sic,{exam:`Week ${idx+1}`,score});
-    }
-   }
-  });
- });
- let bestJump=0; const glowUpMap=new Map();
- participants.forEach(p=>{
-  const sc=p.scores||[];
-  let pBestJump=0, jumpDesc='';
-  for(let i=1;i<(N||sc.length);i++){
-   if(sc[i]!==null&&sc[i-1]!==null&&sc[i]>sc[i-1]){
-    const diff=sc[i]-sc[i-1];
-    if(diff>pBestJump){
-     pBestJump=diff;
-     jumpDesc=`+${diff} pts from Week ${i} to Week ${i+1}`;
-    }
-   }
-  }
-  if(pBestJump>bestJump){
-   bestJump=pBestJump; glowUpMap.clear();
-   glowUpMap.set(p.sic,{diff:pBestJump,desc:jumpDesc});
-  }else if(pBestJump===bestJump&&bestJump>0){
-   glowUpMap.set(p.sic,{diff:pBestJump,desc:jumpDesc});
-  }
- });
- participants.forEach(p=>{
-  const existing=new Set((p.badges||[]).map(b=>b.id));
-  const badges=[...(p.badges||[])];
-  const sc=p.scores||[];
-  if(N>=1&&bestAvg>0&&avgMap.get(p.sic)===bestAvg&&!existing.has('the-main-character')){
-   badges.push({id:'the-main-character',name:'The Main Character',icon:'👑',image_url:'assets/badges/the-main-character.png',category:'ranking',award_date:`Week ${N}`,evidence:`Championship leader with highest cumulative average: ${bestAvg.toFixed(1)}%`});
-   existing.add('the-main-character');
-  }
-  if(topAces.has(p.sic)&&!existing.has('the-ace')){
-   const a=topAces.get(p.sic);
-   badges.push({id:'the-ace',name:'The Ace',icon:'⚡',image_url:'assets/badges/the-ace.png',category:'ranking',award_date:a.exam,evidence:`Attained highest individual exam score: ${a.score}% in ${a.exam}`});
-   existing.add('the-ace');
-  }
-  if(glowUpMap.has(p.sic)&&!existing.has('the-glow-up')){
-   const g=glowUpMap.get(p.sic);
-   badges.push({id:'the-glow-up',name:'The Glow Up',icon:'📈',image_url:'assets/badges/the-glow-up.png',category:'ranking',award_date:'Championship',evidence:`Largest score improvement: ${g.desc}`});
-   existing.add('the-glow-up');
-  }
-  let streak=0,onFire=false;
-  for(let s of sc){if(s!==null&&s>=80){streak++;if(streak>=3)onFire=true;}else streak=0;}
-  if(onFire&&!existing.has('on-fire')){
-   badges.push({id:'on-fire',name:'On Fire',icon:'🔥',image_url:'assets/badges/on-fire.png',category:'milestone',award_date:'Active',evidence:'Scored >= 80% across 3 consecutive weekly exams'});
-   existing.add('on-fire');
-  }
-  if(sc.some(s=>s===100)&&!existing.has('flawless')){
-   badges.push({id:'flawless',name:'Flawless',icon:'💎',image_url:'assets/badges/flawless.png',category:'milestone',award_date:'Verified',evidence:'Achieved a perfect 100% score in a weekly exam'});
-   existing.add('flawless');
-  }
-  let comeback=false;
-  for(let i=1;i<sc.length;i++){if(sc[i-1]!==null&&sc[i-1]<50&&sc[i]!==null&&sc[i]-sc[i-1]>=20){comeback=true;break;}}
-  if(comeback&&!existing.has('the-comeback-arc')){
-   badges.push({id:'the-comeback-arc',name:'The Comeback Arc',icon:'🚀',image_url:'assets/badges/the-comeback-arc.png',category:'milestone',award_date:'Verified',evidence:'Remarkable recovery: Improved by >= 20 pts after scoring < 50%'});
-   existing.add('the-comeback-arc');
-  }
-  if(sc.filter(s=>s!==null).length>=5&&!existing.has('the-unlocked-five')){
-   badges.push({id:'the-unlocked-five',name:'The Unlocked Five',icon:'🔒',image_url:'assets/badges/the-unlocked-five.png',category:'milestone',award_date:'Round 05',evidence:'Participated in all five championship weekly exams'});
-   existing.add('the-unlocked-five');
-  }
-  p.badges=badges;
- });
 }
 
 let lastPodiumKey='',leaderboardPage=1,lastPaginationFilter='';const pageSize=15;
@@ -214,7 +125,6 @@ async function loadLeaderboard(){
   publishedWeek=payload.published_week||0;
   badgeDefinitions=(payload.badge_definitions&&payload.badge_definitions.length)?payload.badge_definitions.map(b=>({...b,image_url:b.image_url?b.image_url.replace(/^\//,''):`assets/badges/${b.id}.png`})):DEFAULT_BADGE_DEFINITIONS;
   allContenders=payload.participants||[];
-  computeContenderBadges(allContenders,publishedWeek);
   datasets={junior:[],cs:[],core:[]};
   allContenders.forEach((p,index)=>{
    const ord={1:'1st',2:'2nd',3:'3rd',4:'4th'};

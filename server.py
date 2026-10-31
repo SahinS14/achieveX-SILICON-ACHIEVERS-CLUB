@@ -1,12 +1,13 @@
 """AchieveX local server. Standard library only; secrets never enter dist/."""
 import csv, hashlib, hmac, io, json, math, os, re, secrets, sqlite3, threading, time
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from http.cookies import SimpleCookie
 from urllib.parse import urlparse, parse_qs
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
-import schedule_config
+import schedule_config, security_store
 ROOT = Path(__file__).resolve().parent
 for line in (ROOT / '.env').read_text().splitlines() if (ROOT / '.env').exists() else []:
     if '=' in line and not line.lstrip().startswith('#'):
@@ -26,9 +27,9 @@ BADGE_DEFINITIONS = [
         'id': 'the-main-character',
         'name': 'The Main Character',
         'icon': '👑',
-        'description': 'Overall AchieveX champion with the highest cumulative performance across weekly exams.',
+        'description': 'Current category leader by published cumulative score; final champion after Week 5.',
         'category': 'ranking',
-        'criteria': 'Highest average percentage across all eligible, finalized exams (all published exams required).',
+        'criteria': 'Highest cumulative score within your category across published weeks. Missing scores count as zero; at least one graded result is required. Ties share the badge.',
         'image_url': '/assets/badges/the-main-character.png'
     },
     {
@@ -37,7 +38,7 @@ BADGE_DEFINITIONS = [
         'icon': '⚡',
         'description': 'Highest scorer in an individual weekly exam.',
         'category': 'ranking',
-        'criteria': 'Attain the highest normalized score in an individual weekly exam.',
+        'criteria': 'Highest score in your category for each published weekly exam. Ties share the badge; multiple weekly awards are retained.',
         'image_url': '/assets/badges/the-ace.png'
     },
     {
@@ -46,7 +47,7 @@ BADGE_DEFINITIONS = [
         'icon': '📈',
         'description': 'Biggest improvement compared with the previous weekly exam.',
         'category': 'ranking',
-        'criteria': 'Greatest positive improvement in percentage points between consecutive finalized weekly exams.',
+        'criteria': 'Largest positive gain in your category for each consecutive published exam pair. Both scores must be graded. Ties share the badge.',
         'image_url': '/assets/badges/the-glow-up.png'
     },
     {
@@ -80,9 +81,9 @@ BADGE_DEFINITIONS = [
         'id': 'the-unlocked-five',
         'name': 'The Unlocked Five',
         'icon': '🔒',
-        'description': 'Participated in all five required weekly exams.',
+        'description': 'Has graded results in all five published weekly exams.',
         'category': 'milestone',
-        'criteria': 'Complete verified participation or submission across all five designated championship exams.',
+        'criteria': 'All five weeks must be published and graded. A graded zero counts; a blank score does not. Scores serve as the participation record.',
         'image_url': '/assets/badges/the-unlocked-five.png'
     }
 ]
@@ -119,7 +120,7 @@ def connection():
                   (b['id'],b['name'],b['icon'],b['description'],b['category'],b['criteria'],b['image_url']))
     c.commit(); return c
 
-def evaluate_badges(rows=None, published_week=None, max_marks=None):
+def _evaluate_category_badges(rows=None, published_week=None, max_marks=None):
     if rows is None: rows = all_rows()
     if published_week is None: published_week = get_week()
     if max_marks is None: max_marks = {1:100.0, 2:100.0, 3:100.0, 4:100.0, 5:100.0}
@@ -144,14 +145,14 @@ def evaluate_badges(rows=None, published_week=None, max_marks=None):
 
     # Badge 1: The Main Character 👑
     # Average percentage across the same set of eligible, finalized exams (1..N).
-    # Exclude students who lack valid results for any exam required in comparison.
+    # Missing published scores count as zero, matching cumulative standings.
     if N >= 1:
         averages = {}
         for r in rows:
             sic = r['sic']
             scores_n = [norm_scores[sic][i] for i in range(1, N + 1)]
-            if all(s is not None for s in scores_n):
-                averages[sic] = sum(scores_n) / N
+            if any(s is not None for s in scores_n):
+                averages[sic] = sum(s or 0 for s in scores_n) / N
         if averages:
             max_avg = max(averages.values())
             for sic, avg in averages.items():
@@ -180,30 +181,17 @@ def evaluate_badges(rows=None, published_week=None, max_marks=None):
                         'category': 'ranking'
                     })
 
-    # Badge 3: The Glow Up 📈
-    # Biggest positive improvement compared with previous weekly exam. Consecutive exams only.
-    if N >= 2:
-        improvements = [] # (delta, sic, exam_i)
+    # One improvement award per category and consecutive published exam pair.
+    for i in range(2,N+1):
+        gains=[]
         for r in rows:
-            sic = r['sic']
-            for i in range(2, N + 1):
-                prev = norm_scores[sic][i - 1]
-                curr = norm_scores[sic][i]
-                if prev is not None and curr is not None:
-                    delta = curr - prev
-                    if delta > 0:
-                        improvements.append((delta, sic, i))
-        if improvements:
-            max_delta = max(imp[0] for imp in improvements)
-            for delta, sic, i in improvements:
-                if math.isclose(delta, max_delta, rel_tol=1e-9, abs_tol=1e-9):
-                    awards.append({
-                        'student_sic': sic,
-                        'badge_id': 'the-glow-up',
-                        'qualifying_exam_id': f'week{i}',
-                        'evidence': f'Biggest improvement: +{delta:.2f} percentage points (Week {i-1} to Week {i})',
-                        'category': 'ranking'
-                    })
+            previous,current=norm_scores[r['sic']][i-1],norm_scores[r['sic']][i]
+            if previous is not None and current is not None and current>previous:
+                gains.append((current-previous,r['sic']))
+        best=max((gain for gain,_ in gains),default=0)
+        for gain,sic in gains:
+            if math.isclose(gain,best,rel_tol=1e-9,abs_tol=1e-9):
+                awards.append({'student_sic':sic,'badge_id':'the-glow-up','qualifying_exam_id':f'week{i}','evidence':f'Largest category improvement: +{gain:.2f} points (Week {i-1} to Week {i})','category':'ranking'})
 
     # Badge 4: On Fire 🔥
     # Consistently scores >= 80% across three consecutive weekly exams.
@@ -260,7 +248,7 @@ def evaluate_badges(rows=None, published_week=None, max_marks=None):
     for r in rows:
         sic = r['sic']
         participations = [r.get('week' + str(i)) is not None for i in range(1, 6)]
-        if all(participations):
+        if N == 5 and all(participations):
             awards.append({
                 'student_sic': sic,
                 'badge_id': 'the-unlocked-five',
@@ -269,6 +257,23 @@ def evaluate_badges(rows=None, published_week=None, max_marks=None):
                 'category': 'milestone'
             })
 
+    return awards
+
+def evaluate_badges(rows=None,published_week=None,max_marks=None):
+    rows=all_rows() if rows is None else rows
+    week=get_week() if published_week is None else published_week
+    if isinstance(week,bool) or not isinstance(week,int) or not 0<=week<=5:raise ValidationError('Published week must be 0–5.')
+    marks=max_marks or {i:100 for i in range(1,6)}
+    for i in range(1,6):
+        m=marks.get(i,100)
+        if isinstance(m,bool) or not isinstance(m,(int,float)) or not math.isfinite(m) or m<=0:raise ValidationError('Invalid maximum marks.')
+        for row in rows:
+            value=row.get('week'+str(i))
+            if value is not None and (isinstance(value,bool) or not isinstance(value,(int,float)) or not math.isfinite(value) or not 0<=value<=m):raise ValidationError('Invalid weekly score in stored data.')
+    awards=[]
+    for track in ('junior','cs','core'):
+        group=[r for r in rows if r.get('track')==track]
+        awards.extend(_evaluate_category_badges(group,week,marks))
     return awards
 
 def evaluate_and_save_badges(max_marks=None):
@@ -297,46 +302,16 @@ def evaluate_and_save_badges(max_marks=None):
                       (a['student_sic'], a['badge_id'], today, a['qualifying_exam_id'], a['evidence']))
         c.commit()
 
-def get_student_badges_map():
-    if URL or KEY: return {}
-    defs = {b['id']: b for b in BADGE_DEFINITIONS}
-    with connection() as c:
-        rows = c.execute('''select student_sic, badge_id, award_date, qualifying_exam_id, evidence
-                            from student_badges
-                            where is_active=1
-                            order by award_date asc, qualifying_exam_id asc''').fetchall()
-    by_student = {}
-    for r in rows:
-        sic = r['student_sic']
-        bid = r['badge_id']
-        d = defs.get(bid, {})
-        student_list = by_student.setdefault(sic, [])
-        # Group multiple awards of the same badge (e.g. multiple Aces) cleanly
-        existing = next((b for b in student_list if b['id'] == bid), None)
-        record = {
-            'award_date': r['award_date'],
-            'qualifying_exam_id': r['qualifying_exam_id'],
-            'evidence': r['evidence']
-        }
+def get_student_badges_map(rows=None,published_week=None):
+    definitions={b['id']:b for b in BADGE_DEFINITIONS};result={}
+    for award in evaluate_badges(rows,published_week):
+        sic,bid=award['student_sic'],award['badge_id'];key=award['qualifying_exam_id']
+        history={'award_date':'Published '+key,'qualifying_exam_id':key,'evidence':award['evidence']}
+        items=result.setdefault(sic,[]);existing=next((b for b in items if b['id']==bid),None)
         if existing:
-            existing['count'] += 1
-            existing['history'].append(record)
-        else:
-            student_list.append({
-                'id': bid,
-                'name': d.get('name', bid),
-                'icon': d.get('icon', ''),
-                'description': d.get('description', ''),
-                'category': d.get('category', ''),
-                'criteria': d.get('criteria', ''),
-                'image_url': d.get('image_url', ''),
-                'award_date': r['award_date'],
-                'qualifying_exam_id': r['qualifying_exam_id'],
-                'evidence': r['evidence'],
-                'count': 1,
-                'history': [record]
-            })
-    return by_student
+            existing['count']+=1;existing['history'].append(history)
+        else:items.append({**definitions[bid],**history,'count':1,'history':[history]})
+    return result
 
 def remote(path, method='GET', body=None):
     if not URL.startswith('https://') or not KEY: raise StorageError('Complete both Supabase settings in .env, then restart.')
@@ -404,14 +379,14 @@ def validate(raw):
         try: value=float(value)
         except (TypeError,ValueError): raise ValidationError('Weekly scores must be numbers from 0 to 100.')
         if not math.isfinite(value) or not 0<=value<=100: raise ValidationError('Weekly scores must be from 0 to 100.')
-        r['week'+str(i)]=round(value,2)
+        r['week'+str(i)]=float(Decimal(str(raw.get('week'+str(i)))).quantize(Decimal('0.01'),rounding=ROUND_HALF_UP))
     return r
 
-def total(r,week=5): return round(sum(r.get('week'+str(i)) or 0 for i in range(1,week+1)),2)
+def total(r,week=5): return float(sum((Decimal(str(r.get('week'+str(i)) or 0)) for i in range(1,week+1)),Decimal(0)).quantize(Decimal('0.01'),rounding=ROUND_HALF_UP))
 def public_results():
     if CLOUD and not (URL or KEY): return {'published_week':0,'participants':[], 'setup_pending':True, 'badge_definitions':BADGE_DEFINITIONS}
     week=get_week(); rows=all_rows(); result=[]
-    badges_map = get_student_badges_map()
+    badges_map = get_student_badges_map(rows,week)
     for r in rows:
         # Personal contact details never appear in this projection.
         result.append({
@@ -466,7 +441,7 @@ class Handler(SimpleHTTPRequestHandler):
                 expires,nonce,signature=token.split('.')
                 secret=os.getenv('SESSION_SECRET','')
                 expected=hmac.new(secret.encode(),(expires+'.'+nonce).encode(),hashlib.sha256).hexdigest()
-                if secret and int(expires)>time.time() and hmac.compare_digest(expected,signature): return token
+                if secret and int(expires)>time.time() and hmac.compare_digest(expected,signature) and security_store.session(URL,KEY,secret,token): return token
             except (KeyError,ValueError): pass
             return None
         try:
@@ -480,6 +455,7 @@ class Handler(SimpleHTTPRequestHandler):
     def read_body(self):
         try:n=int(self.headers.get('Content-Length','0'))
         except ValueError:raise ValidationError('Invalid body.')
+        if n<0:raise ValidationError('Invalid body length.')
         if n>2_100_000:raise ValidationError('Request too large.')
         try:return json.loads(self.rfile.read(n))
         except (ValueError,UnicodeError):raise ValidationError('Invalid JSON.')
@@ -514,6 +490,10 @@ class Handler(SimpleHTTPRequestHandler):
                 if CLOUD and not (URL and KEY and os.getenv('ADMIN_PIN') and os.getenv('SESSION_SECRET')):
                     return self.json_response({'error':'Admin setup pending. Configure Supabase, ADMIN_PIN and SESSION_SECRET in Vercel, then redeploy.'},503)
                 ip=self.client_address[0];now=time.time()
+                if CLOUD:
+                    ip=self.headers.get('x-vercel-forwarded-for',ip).split(',')[0].strip()
+                    if not security_store.allow_attempt(URL,KEY,os.environ['SESSION_SECRET'],ip,now):
+                        return self.json_response({'error':'Too many attempts. Try again in 10 minutes.'},429)
                 with LOCK:
                     failed=[t for t in ATTEMPTS.get(ip,[]) if now-t<600];ATTEMPTS[ip]=failed
                     if len(failed)>=6:return self.json_response({'error':'Too many attempts. Try again in 10 minutes.'},429)
@@ -523,14 +503,18 @@ class Handler(SimpleHTTPRequestHandler):
                     if CLOUD:
                         payload=str(int(now+28800))+'.'+secrets.token_hex(12)
                         token=payload+'.'+hmac.new(os.environ['SESSION_SECRET'].encode(),payload.encode(),hashlib.sha256).hexdigest()
+                        security_store.session(URL,KEY,os.environ['SESSION_SECRET'],token,'create',now+28800)
                 return self.json_response({'ok':True},cookie=f'ax_admin={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800'+('; Secure' if CLOUD else ''))
             token=self.authorized()
             if not token:return self.json_response({'error':'Session expired. Unlock the panel again.'},401)
             if path=='/api/admin/logout':
+                if CLOUD:security_store.session(URL,KEY,os.environ['SESSION_SECRET'],token,'revoke')
                 with LOCK:SESSIONS.pop(token,None)
                 return self.json_response({'ok':True},cookie='ax_admin=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0'+('; Secure' if CLOUD else ''))
             if path=='/api/admin/participant':
+                if not isinstance(body.get('editing',False),bool):raise ValidationError('Invalid editing flag.')
                 row=validate(body);existing={r['sic'] for r in all_rows()}
+                if body.get('editing') and row['sic'] not in existing:return self.json_response({'error':'Participant no longer exists. Add a new participant instead.'},404)
                 if not body.get('editing') and row['sic'] in existing:raise ValidationError('This SIC already exists. Use Edit to update it.')
                 save_rows([row]);return self.json_response({'ok':True,'total':total(row)})
             if path=='/api/admin/delete':
