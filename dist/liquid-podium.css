@@ -29,3 +29,48 @@
 :root[data-theme=light] #leaderboard .ranking-panel .rank-row.leader{background:#fff5d1;border-color:#ab792e59}
 :root[data-theme=light] #leaderboard .ranking-panel :is(input,select){color:#302519}
 @media(hover:hover) and (pointer:fine){#leaderboard .ranking-panel .rank-row:hover{background:#fff5d1;border-color:#aa7a334d}}
+/* Coordinated saffron / parchment edition, contained to standings. */
+:root #leaderboard .ranking-panel{background:linear-gradient(145deg,#f8dc85,#edc65e);border-color:#d7ae43;border-radius:24px;box-shadow:inset 0 1px #fff7,0 18px 45px #16100712;padding:28px;--text:#332615;--muted:#6d5632;--line:#9b763331;--accent:#72501f;color:#332615}
+:root #leaderboard .ranking-panel .ranking-head{padding-top:6px;align-items:center}
+:root #leaderboard .ranking-panel .ranking-head h2{font:650 26px/1.2 Outfit;letter-spacing:-.7px;color:#332615}
+:root #leaderboard .ranking-panel .ranking-head p{font:400 12px/1.7 Outfit;color:#6d5632}
+:root #leaderboard .ranking-panel select{background:#fff3ce;border:1px solid #caa14c;border-radius:13px;padding:12px 15px;font:500 12px Outfit;color:#493316;box-shadow:inset 0 1px #fffa;min-height:43px}
+:root #leaderboard .ranking-panel select option{background:#fff8e5;color:#493316}
+:root #leaderboard .ranking-panel .search-row{padding:16px 0 17px;margin:18px 0 0;border-top:1px solid #9b763325}
+:root #leaderboard .ranking-panel .search{background:#fff3ce;border:1px solid #caa14c;border-radius:13px;box-shadow:inset 0 1px #fffa;min-height:46px}
+:root #leaderboard .ranking-panel .search:focus-within{border-color:#8d6222;box-shadow:0 0 0 3px #9a6b1f15}
+:root #leaderboard .ranking-panel .search input{font:400 14px Outfit;color:#3f2d15}
+:root #leaderboard .ranking-panel .search input::placeholder{color:#79603a;opacity:1}
+:root #leaderboard .ranking-panel .search :is(svg,.search-hint){color:#72562a}
+:root #leaderboard .ranking-panel .search-hint{border-color:#b38b4740}
+:root #leaderboard .ranking-panel .search-row>span{color:#765d32}
+:root #leaderboard .ranking-panel .list-labels{color:#6f552b;font-weight:650;padding:3px 18px 12px;letter-spacing:1.2px}
+:root #leaderboard .ranking-panel .rank-row{background:#fff8e5;border:1px solid #e0c176;border-radius:15px;padding:17px 18px;margin-bottom:10px;box-shadow:0 2px 4px #76522504;gap:16px}
+:root #leaderboard .ranking-panel .rank-row.leader{background:#ffefc0;border-color:#b98a33;box-shadow:inset 3px 0 #a57024,0 2px 4px #76522505}
+:root #leaderboard .ranking-panel .rank-row .rank-number{background:#f2e3bf;border:1px solid #dfc48b;border-radius:9px;font:600 16px/1 Outfit;letter-spacing:0;color:#725328;min-width:30px;width:auto;padding:5px;height:32px}
+:root #leaderboard .ranking-panel .rank-row.leader .rank-number{background:#8a5d22;border-color:#8a5d22;color:#fff8e7}
+:root #leaderboard .ranking-panel .rank-row .avatar{border-color:#bf994a66;box-shadow:0 1px 3px #6c4a1410}
+:root #leaderboard .ranking-panel .rank-row .rank-info h3{font-weight:600;color:#392914}
+:root #leaderboard .ranking-panel .rank-row :is(.rank-meta,.student-year){color:#77613d}
+:root #leaderboard .ranking-panel .rank-row .rank-total strong{font:700 26px Outfit;color:#503718;letter-spacing:-.6px}
+:root #leaderboard .ranking-panel .rank-row .rank-total small{color:#79623e}
+:root #leaderboard .ranking-panel .bar{background:#e6d5ae;height:4px}
+:root #leaderboard .ranking-panel .bar span{background:linear-gradient(90deg,#c49a42,#765222)}
+:root #leaderboard .ranking-panel .badge-chip{background:#f1e6ca;border:1px solid #dbc58f;box-shadow:inset 0 1px #fff8;color:#65451f;padding:4px 8px;border-radius:20px}
+:root #leaderboard .ranking-panel .badge-chip :is(.badge-chip-name,.badge-chip-count){color:#65451f!important;font-weight:550}
+:root #leaderboard .ranking-panel .badge-chip-count{background:#e6d09c;border-color:#c9a45f}
+:root #leaderboard .ranking-panel .badge-chip-icon{filter:drop-shadow(0 1px 2px #70502220)}
+:root #leaderboard .ranking-panel .leaderboard-pagination{border-color:#aa813c40;padding-top:22px;margin-top:24px}
+:root #leaderboard .ranking-panel .page-pill{background:#3e3020;border:1px solid #46331b;border-radius:35px;box-shadow:inset 0 1px #fff1,0 5px 12px #87632517}
+:root #leaderboard .ranking-panel .page-pill button{color:#efe0bf;border-color:transparent}
+:root #leaderboard .ranking-panel .page-pill button[aria-current=page]{background:#f4d47e;border-color:#fce4a2;color:#443015;box-shadow:0 0 0 3px #f4d47e0c;font-weight:700}
+:root #leaderboard .ranking-panel .page-arrow{background:#fff4d5;border-color:#c19b4e;color:#68451e;box-shadow:inset 0 1px #fff9}
+:root #leaderboard .ranking-panel .page-arrow:disabled{opacity:.4}
+:root #leaderboard .ranking-panel .page-gap{color:#c8b38b}
+:root #leaderboard .ranking-panel .list-footer{color:#725a32;border:0;margin-top:20px;font-size:9px}
+:root #leaderboard .ranking-panel .list-footer :is(span,b){color:#725a32}
+:root #leaderboard .ranking-panel .empty{color:#5f4927}
+:root #leaderboard .ranking-panel :is(button,select,input):focus-visible{outline-color:#714717}
+:root #leaderboard .ranking-panel:before{background:#a47c3780}
+@media(hover:hover) and (pointer:fine){:root #leaderboard .ranking-panel .rank-row:hover{background:#fff1cd;border-color:#bd9650}:root #leaderboard .ranking-panel .page-pill button:not([aria-current=page]):hover{background:#705532;color:#fff4d4}:root #leaderboard .ranking-panel .page-arrow:not(:disabled):hover{background:#f3e0aa;color:#4a3013}:root #leaderboard .ranking-panel .badge-chip:hover{background:#e8d6aa;border-color:#b68b40}}
+@media(max-width:700px){:root #leaderboard .ranking-panel{padding:25px 12px 19px;border-radius:22px}:root #leaderboard .ranking-panel .ranking-head{padding:5px 5px 0;gap:10px}:root #leaderboard .ranking-panel .ranking-head h2{font-size:21px;letter-spacing:-.5px}:root #leaderboard .ranking-panel .ranking-head p{font-size:9px}:root #leaderboard .ranking-panel select{padding:10px;font-size:11px;min-height:42px;border-radius:11px}:root #leaderboard .ranking-panel .search-row{margin:17px 3px 0;padding:14px 0 16px}:root #leaderboard .ranking-panel .search{min-height:44px;border-radius:11px}:root #leaderboard .ranking-panel .search input{font-size:16px}:root #leaderboard .ranking-panel .search input::placeholder{font-size:12px}:root #leaderboard .ranking-panel .search-row>span{font-size:6px}:root #leaderboard .ranking-panel .list-labels{font-size:6px;padding:2px 10px 11px}:root #leaderboard .ranking-panel .rank-row{padding:14px 9px;gap:9px;margin-bottom:9px;border-radius:12px}:root #leaderboard .ranking-panel .rank-row .rank-number{font-size:12px;min-width:24px;height:27px;border-radius:8px;padding:4px}:root #leaderboard .ranking-panel .rank-row .rank-info h3{font-size:14px}:root #leaderboard .ranking-panel .rank-row .rank-meta{font-size:9px}:root #leaderboard .ranking-panel .rank-row .rank-total strong{font-size:23px}:root #leaderboard .ranking-panel .badge-chip{padding:3px 6px}:root #leaderboard .ranking-panel .badge-chip-name{font-size:7px}:root #leaderboard .ranking-panel .leaderboard-pagination{padding-top:18px;margin-top:19px}:root #leaderboard .ranking-panel .list-footer{font-size:7px;line-height:1.8;margin-top:18px}}
