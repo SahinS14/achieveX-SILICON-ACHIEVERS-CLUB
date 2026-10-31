@@ -12,7 +12,19 @@ for(const el of staticDoc.querySelectorAll('[src],link[rel="stylesheet"]')){
  const asset=el.getAttribute('src')||el.getAttribute('href');
  if(asset&&!/^(https?:|data:)/.test(asset))assert.ok(fs.existsSync(resolve('dist',asset.split('?')[0])),'missing asset: '+asset);
 }
+const loaderScript=[...staticDoc.scripts].find(script=>script.textContent.includes("var el=document.getElementById('site-preloader')")).textContent;
 staticDOM.window.close();
+for(const visit of ['initial visit','refresh']){
+ const loaderDOM=new JSDOM(html,{url:'https://achievex.test/',runScripts:'outside-only'});
+ const window=loaderDOM.window;window.setTimeout=()=>1;
+ window.eval(loaderScript);
+ assert.equal(window.document.querySelector('#site-preloader').classList.contains('is-loading'),true,visit+' displays loader');
+ window.document.querySelector('#skip-preloader').click();
+ assert.equal(window.document.querySelector('#site-preloader').getAttribute('aria-hidden'),'true');
+ loaderDOM.window.close();
+}
+console.log('Preloader appears on fresh visit and refresh');
+
 
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 async function audit(width,initialOffline=false){
@@ -30,6 +42,9 @@ async function audit(width,initialOffline=false){
  w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  const badge={id:'the-ace',name:'The Ace',image_url:'/assets/badges/the-ace.png',category:'ranking',description:'Top scorer',criteria:'Highest category score in a published week',evidence:'Top score in Week 1: 95%',count:1};
  const participants=Array.from({length:21},(_,i)=>({full_name:i===0?'Demo Student (Demo)':'Student '+i,sic:'demo'+String(i).padStart(5,'0'),year:1,track:'junior',scores:[95-i,90,85,null,null],badges:i===0?[badge]:[]}));
+ participants[1].scores=[94,99,99,null,null];
+ participants[20].scores=[null,90,85,null,null];
+ participants[19].scores=[0,90,85,null,null];
  participants.push({full_name:'Registered Student',sic:'24beca53',year:3,track:'cs',scores:[88,91,97,null,null],badges:[]});
  const schedule=Object.fromEntries(['junior','cs','core'].map(track=>[track,Array.from({length:5},(_,i)=>({round:i+1,revealed:i===0&&track==='cs',subject:'C Programming',scope:'Loops and functions',syllabus_url:'https://silicon.ac.in/example.pdf',date:''}))]));
  w.fetch=async url=>{if(failures)throw Error('Simulated offline');return {ok:true,json:async()=>url==='/api/schedule'?{schedule}:{published_week:3,participants,badge_definitions:[]}};};
@@ -45,6 +60,18 @@ async function audit(width,initialOffline=false){
   assert.equal(d.querySelectorAll('.rank-row').length,15,'first page');
   assert.match(d.querySelector('.demo-pill').textContent,/INCLUDES DEMO DATA/,'mixed demo label');
   assert.equal(d.querySelector('#rows').getAttribute('aria-busy'),'false');
+  assert.match(d.querySelector('.rank-row').textContent,/Student 1/,'cumulative leader uses every published week');
+  assert.equal(d.querySelector('.rank-row .score-value').textContent,'292');
+  assert.equal(d.querySelector('#max').textContent,'300');
+  const week=d.querySelector('#week');week.value='0';week.dispatchEvent(new w.Event('change'));
+  assert.match(d.querySelector('.rank-row').textContent,/Demo Student/,'Week 1 has a different leader');
+  assert.equal(d.querySelector('.rank-row .score-value').textContent,'95');
+  assert.equal(d.querySelector('#max').textContent,'100');
+  const scoreSearch=d.querySelector('#search');scoreSearch.value='demo00020';scoreSearch.dispatchEvent(new w.Event('input'));assert.equal(d.querySelectorAll('.rank-row').length,0,'ungraded week excluded');
+  scoreSearch.value='demo00019';scoreSearch.dispatchEvent(new w.Event('input'));assert.equal(d.querySelector('.rank-row .score-value').textContent,'0','graded zero remains eligible');
+  scoreSearch.value='';week.value='all';week.dispatchEvent(new w.Event('change'));
+  assert.equal(d.querySelector('.rank-row .score-value').textContent,'292');
+
   d.querySelector('[data-board-page="2"]').click();
   assert.equal(d.querySelectorAll('.rank-row').length,6,'second page');
   d.querySelector('.standings-jump').click();assert.equal(d.activeElement.id,'search');
