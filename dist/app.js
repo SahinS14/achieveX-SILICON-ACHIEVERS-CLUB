@@ -164,12 +164,10 @@ async function loadLeaderboard(){
   if(period!=='all'&&Number(period)>=publishedWeek)period='all';
   $('#week').innerHTML='<option value="all">Overall · '+publishedWeek+' / 5 weeks</option>'+Array.from({length:publishedWeek},(_,i)=>`<option value="${i}">Week ${i+1}</option>`).join('');
   $('#week').value=period;
-  const demoCount=allContenders.filter(p=>p.sic.startsWith('demo')||/\(Demo\)/i.test(p.full_name)).length;
-  document.querySelector('.demo-pill').textContent=demoCount?(demoCount===allContenders.length?'DEMO STANDINGS':'INCLUDES DEMO DATA'):'PUBLISHED STANDINGS';
   document.querySelector('.round-tag').innerHTML=`${publishedWeek?'RESULTS THROUGH WEEK '+publishedWeek:'AWAITING FIRST RESULTS'}`;
   document.querySelector('.arena-round strong').innerHTML=`Week ${String(publishedWeek).padStart(2,'0')} <em>/ 05</em>`;
   document.querySelectorAll('.round-dots i').forEach((dot,i)=>{dot.classList.toggle('completed',i<publishedWeek);dot.classList.toggle('current',i===publishedWeek-1);});
-  document.querySelector('.list-footer>span').textContent=(demoCount?'Includes sample participants · ':'')+'Equal scores share a rank';
+  document.querySelector('.list-footer>span').textContent='Equal scores share a rank';
   render();
   renderBadgesPage();
   lastResultsSignature=signature;

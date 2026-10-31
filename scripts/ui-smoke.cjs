@@ -58,7 +58,8 @@ async function audit(width,initialOffline=false){
    console.log('Initial offline state and retry recovery passed');return;
   }
   assert.equal(d.querySelectorAll('.rank-row').length,15,'first page');
-  assert.match(d.querySelector('.demo-pill').textContent,/INCLUDES DEMO DATA/,'mixed demo label');
+  assert.equal(d.querySelector('.demo-pill'),null,'no demo status tag');
+  assert.equal(d.querySelector('.list-footer>span').textContent,'Equal scores share a rank');
   assert.equal(d.querySelector('#rows').getAttribute('aria-busy'),'false');
   assert.match(d.querySelector('.rank-row').textContent,/Student 1/,'cumulative leader uses every published week');
   assert.equal(d.querySelector('.rank-row .score-value').textContent,'292');
