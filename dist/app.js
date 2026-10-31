@@ -170,7 +170,7 @@ function computeContenderBadges(participants, pubWeek){
  });
 }
 
-let lastPodiumKey='';
+let lastPodiumKey='',leaderboardPage=1,lastPaginationFilter='';const pageSize=15;
 function render(){
  const key=category==='junior'?'junior':$('#track').value;
  const data=[...datasets[key]].filter(p=>publishedWeek>0&&(period==='all'?p.scores.slice(0,publishedWeek).some(s=>s!==null):p.scores[Number(period)]!==null)).sort((a,b)=>total(b)-total(a)||a.id.localeCompare(b.id));
@@ -180,13 +180,21 @@ function render(){
  if(lastPodiumKey!==podiumKey){lastPodiumKey=podiumKey;const order=[data[1],data[0],data[2]].filter(Boolean);$('#podium').innerHTML=order.map(p=>`<article class="pod-entry ${p.rank===1?'first':p.rank===2?'second':'third'}"><div class="pod-person"><div class="avatar">${p.rank===1?'<span class="crown">♛</span>':''}${avatar(p)}</div><h3>${escapeHTML(p.name)}</h3><span class="pod-points"><span class="score-value" data-score="${total(p)}">${formatScore(total(p))}</span><small>PTS</small></span></div><div class="pod-block"><div class="platform-top"></div><strong>${p.rank}</strong><span>${p.rank===1?'THE PACESETTER':'THE CONTENDER'}</span></div></article>`).join('');}
  const query=$('#search').value.trim().toLowerCase(),filtered=data.filter(p=>(p.name+' '+p.id).toLowerCase().includes(query));
  $('#count').textContent=`${filtered.length} of ${data.length} contenders · ${category==='junior'?'Junior':key==='cs'?'Senior / CS':'Senior / Core'} · ${period==='all'?'Cumulative / 500':`Week ${Number(period)+1}`}`;
- $('#rows').innerHTML=filtered.length?filtered.map(p=>`<article class="rank-row ${p.rank===1?'leader':''}"><span class="rank-number">${p.rank}</span><span class="avatar">${avatar(p)}</span><div class="rank-info"><h3>${escapeHTML(p.name)}</h3><div class="rank-meta"><span>${escapeHTML(p.id)}</span><span>·</span><span class="student-year">${p.year}</span></div>${renderBadges(p)}</div><div class="rank-total"><strong class="score-value" data-score="${total(p)}">${formatScore(total(p))}</strong><small>pts</small><div class="bar"><span style="width:${total(p)/max*100}%"></span></div></div></article>`).join(''):`<p class="empty">${query?'No contenders match your search.':publishedWeek===0?'The first results are on their way. Check back after publication.':'No graded results in this category yet.'}</p>`;
+ const filterKey=key+'|'+period+'|'+query;if(filterKey!==lastPaginationFilter){leaderboardPage=1;lastPaginationFilter=filterKey;}const pages=Math.max(1,Math.ceil(filtered.length/pageSize));leaderboardPage=Math.min(leaderboardPage,pages);const start=(leaderboardPage-1)*pageSize,visible=filtered.slice(start,start+pageSize);renderPagination(filtered.length,pages,start,visible.length);
+ $('#rows').innerHTML=filtered.length?visible.map(p=>`<article class="rank-row ${p.rank===1?'leader':''}"><span class="rank-number">${p.rank}</span><span class="avatar">${avatar(p)}</span><div class="rank-info"><h3>${escapeHTML(p.name)}</h3><div class="rank-meta"><span>${escapeHTML(p.id)}</span><span>·</span><span class="student-year">${p.year}</span></div>${renderBadges(p)}</div><div class="rank-total"><strong class="score-value" data-score="${total(p)}">${formatScore(total(p))}</strong><small>pts</small><div class="bar"><span style="width:${total(p)/max*100}%"></span></div></div></article>`).join(''):`<p class="empty">${query?'No contenders match your search.':publishedWeek===0?'The first results are on their way. Check back after publication.':'No graded results in this category yet.'}</p>`;
  const weekly=[...datasets[key]].filter(p=>publishedWeek>0&&p.scores[publishedWeek-1]!==null).sort((a,b)=>(b.scores[publishedWeek-1]??0)-(a.scores[publishedWeek-1]??0));const winner=weekly[0];
  const mainChars=allContenders.flatMap(p=>(p.badges||[]).filter(b=>b.id==='the-main-character').map(b=>({...b,student:p})));
  const currentAces=allContenders.flatMap(p=>(p.badges||[]).filter(b=>b.id==='the-ace'&&(publishedWeek?b.qualifying_exam_id==='week'+publishedWeek:true)).map(b=>({...b,student:p})));
  const unlockedCount=allContenders.filter(p=>(p.badges||[]).some(b=>b.id==='the-unlocked-five')).length;
 
 }
+function renderPagination(total,pages,start,count){
+ const nav=$('#leaderboard-pagination');if(!nav)return;nav.hidden=total===0;
+ const candidates=new Set([1,pages,leaderboardPage-1,leaderboardPage,leaderboardPage+1]);const numbers=[...candidates].filter(n=>n>0&&n<=pages).sort((a,b)=>a-b);let previous=0;
+ const links=numbers.map(n=>{const gap=previous&&n-previous>1?'<span class="page-gap" aria-hidden="true">…</span>':'';previous=n;return gap+`<button type="button" data-board-page="${n}" ${n===leaderboardPage?'aria-current="page"':''} aria-label="Page ${n}">${String(n).padStart(2,'0')}</button>`}).join('');
+ nav.innerHTML=`<div class="pagination-caption"><b>${total?start+1:0}–${start+count}</b><span>of ${total} contenders</span></div><div class="pagination-controls"><button type="button" class="page-arrow" data-board-page="${leaderboardPage-1}" ${leaderboardPage===1?'disabled':''} aria-label="Previous page">←</button>${links}<button type="button" class="page-arrow" data-board-page="${leaderboardPage+1}" ${leaderboardPage===pages?'disabled':''} aria-label="Next page">→</button></div>`;
+}
+$('#leaderboard-pagination')?.addEventListener('click',event=>{const button=event.target.closest('[data-board-page]');if(!button||button.disabled)return;leaderboardPage=Number(button.dataset.boardPage);render();const current=$('#leaderboard-pagination').querySelector('[aria-current="page"]');current?.focus({preventScroll:true});$('.ranking-panel').scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});});
 function renderBadgesPage(){
  if(!$('#badges-grid')) return;
  const list=(badgeDefinitions&&badgeDefinitions.length)?badgeDefinitions:DEFAULT_BADGE_DEFINITIONS;
