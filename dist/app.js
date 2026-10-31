@@ -112,6 +112,32 @@ function renderBadgesPage(){
  $('#badges-grid').innerHTML=list.map((b,index)=>{
   return `<article class="badge-card minimal-badge" style="--card-delay:${index*45}ms"><div class="honour-art"><span class="honour-index">0${index+1}</span><img src="${escapeHTML(b.image_url)}" alt="${escapeHTML(b.name)}" class="badge-card-image"></div><div class="honour-copy"><span class="honour-category">${b.category==='ranking'?'PERFORMANCE':'MILESTONE'}</span><h3 class="badge-card-title">${escapeHTML(b.name)}</h3><p class="badge-card-desc">${escapeHTML(b.description)}</p><details class="honour-rule"><summary>How it’s earned <span>＋</span></summary><p class="badge-card-criteria-text">${escapeHTML(b.criteria)}</p></details></div></article>`;
  }).join('');
+ setupBadgeCarousel(list);
+}
+function setupBadgeCarousel(list){
+ const grid=$('#badges-grid');
+ let controls=$('#badge-carousel-controls');
+ if(!controls){controls=document.createElement('div');controls.id='badge-carousel-controls';controls.className='badge-carousel-controls';grid.after(controls);}
+ controls.innerHTML=`<button type="button" data-badge-step="-1" aria-label="Previous badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><div class="badge-carousel-dots">${list.map((b,i)=>`<button type="button" data-badge-slide="${i}" aria-label="Show ${escapeHTML(b.name)}"></button>`).join('')}</div><button type="button" data-badge-step="1" aria-label="Next badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button><span class="badge-carousel-status" aria-live="polite"></span>`;
+ const cards=[...grid.children];let current=Math.min(Number(grid.dataset.slide)||0,cards.length-1),frame;
+ const mobile=()=>matchMedia('(max-width:700px)').matches;
+ const update=index=>{
+  current=index;grid.dataset.slide=index;
+  controls.querySelectorAll('[data-badge-slide]').forEach((dot,i)=>{if(i===index)dot.setAttribute('aria-current','true');else dot.removeAttribute('aria-current');});
+  controls.querySelector('[data-badge-step="-1"]').disabled=index===0;
+  controls.querySelector('[data-badge-step="1"]').disabled=index===cards.length-1;
+  controls.querySelector('.badge-carousel-status').textContent=`${index+1} / ${cards.length}`;
+ };
+ const go=(index,instant=false)=>{
+  index=Math.max(0,Math.min(cards.length-1,index));
+  if(mobile()&&grid.clientWidth){const left=cards[index].getBoundingClientRect().left-grid.getBoundingClientRect().left+grid.scrollLeft;grid.scrollTo({left,behavior:instant||matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
+  update(index);
+ };
+ controls.onclick=event=>{const target=event.target.closest('button');if(!target)return;if(target.dataset.badgeSlide!==undefined)go(Number(target.dataset.badgeSlide));else go(current+Number(target.dataset.badgeStep));};
+ grid.onscroll=()=>{if(!mobile())return;cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{const left=grid.getBoundingClientRect().left;let nearest=0;cards.forEach((card,i)=>{if(Math.abs(card.getBoundingClientRect().left-left)<Math.abs(cards[nearest].getBoundingClientRect().left-left))nearest=i;});update(nearest);});};
+ grid.onkeydown=event=>{if(!mobile()||event.target!==grid)return;if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();go(current+(event.key==='ArrowRight'?1:-1));}};
+ grid.tabIndex=0;grid.setAttribute('aria-label','Badge collection');
+ requestAnimationFrame(()=>go(current,true));
 }
 let leaderboardLoadActive=false,lastResultsSignature="";
 async function loadLeaderboard(){

@@ -7,3 +7,32 @@
 @media(max-width:700px){#leaderboard .page-heading{padding:9px 0 23px;min-height:205px;margin-bottom:15px}#leaderboard .page-heading .eyebrow{font-size:5px;letter-spacing:1.4px}#leaderboard .page-heading h1{font-size:39px;letter-spacing:-1.3px;margin:17px 0 13px}#leaderboard .page-heading h1 em{letter-spacing:-1.4px}#leaderboard .page-heading p{font-size:12px;line-height:1.7;max-width:225px}#leaderboard .heading-art{height:200px;top:20px;opacity:.45}#leaderboard .demo-pill{margin:0;top:5px}#badges .achievement-heading{padding:23px 0 20px}#badges .achievement-title{margin:17px 0 12px;display:flex;align-items:end;gap:15px}#badges .achievement-title h1{font-size:35px;letter-spacing:-1.1px}#badges .achievement-title h1 em{letter-spacing:-1.2px}#badges .honours-edition{font-size:4px;line-height:1.8;margin-bottom:3px;letter-spacing:.6px;max-width:75px}#badges .achievement-heading>p{font-size:12px;max-width:280px}#badges .badges-gallery-header{margin:18px 0 13px}#badges .badges-gallery-header h2{font-size:12px}#badges .badges-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}#badges .minimal-badge{padding:14px 12px;border-radius:13px}#badges .honour-art{height:87px;margin:0 0 12px}#badges .honour-art:before{width:74px;height:74px}#badges .honour-art:after{width:86px;height:86px}#badges .badge-card-image{height:76px;width:76px}#badges .honour-index{font-size:6px;top:0;left:0}#badges .honour-category{font-size:4px;letter-spacing:1px;margin-bottom:7px}#badges .badge-card-title{font-size:18px;letter-spacing:-.4px;margin-bottom:8px}#badges .badge-card-desc{font-size:11px;line-height:1.7;min-height:56px;margin-bottom:10px}#badges .honour-rule{margin-top:4px;padding-top:7px}#badges .honour-rule summary{font-size:9px;min-height:36px;gap:8px}#badges .honour-rule summary>span{font-size:14px}#badges .honour-rule .badge-card-criteria-text{font-size:11px;line-height:1.8;padding-top:7px}}
 @media(max-width:360px){#badges .badges-grid{grid-template-columns:1fr}#badges .minimal-badge{padding:20px}#badges .honour-art{height:95px}#badges .badge-card-title{font-size:22px}#badges .badge-card-desc{font-size:13px;min-height:0}#badges .honour-rule summary{font-size:11px}#badges .honour-rule .badge-card-criteria-text{font-size:12px}}
 @media(prefers-reduced-motion:reduce){#badges .minimal-badge,#badges .badge-card-image{animation:none}#badges .minimal-badge,#badges .honour-rule summary>span{transition:none}}
+
+/* One collectible per mobile viewport; native gestures retain vertical page scrolling. */
+.badge-carousel-controls{display:none}
+@media(max-width:700px){
+ #badges .badges-grid{display:flex;gap:16px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;align-items:stretch;margin-bottom:18px;padding:2px 0 12px;touch-action:pan-x pan-y pinch-zoom}
+ #badges .badges-grid::-webkit-scrollbar{display:none}
+ #badges .minimal-badge{box-sizing:border-box;flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;padding:25px;animation:none;min-height:360px}
+ #badges .honour-art{height:160px;margin-bottom:23px}
+ #badges .badge-card-image{width:145px;height:145px}
+ #badges .honour-art:before{width:142px;height:142px}
+ #badges .honour-art:after{width:165px;height:165px}
+ #badges .honour-category{font-size:9px;letter-spacing:1.6px}
+ #badges .badge-card-title{font-size:28px;line-height:1.12;margin-bottom:12px}
+ #badges .badge-card-desc{font-size:14px;line-height:1.65;min-height:0}
+ #badges .honour-rule summary{font-size:13px;min-height:44px;touch-action:manipulation}
+ #badges .honour-rule .badge-card-criteria-text{font-size:13px}
+ .badge-carousel-controls{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px;max-width:360px;margin:0 auto 28px}
+ .badge-carousel-controls>button{display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--line);border-radius:50%;background:var(--sidebar);color:var(--text);touch-action:manipulation;cursor:pointer}
+ .badge-carousel-controls>button svg{width:20px;height:20px}
+ .badge-carousel-controls>button:disabled{opacity:.3;cursor:default}
+ .badge-carousel-controls button:active:not(:disabled){transform:scale(.94)}
+ .badge-carousel-dots{display:flex;justify-content:center;gap:0}
+ .badge-carousel-dots button{width:26px;height:44px;padding:0;border:0;background:none;position:relative;touch-action:manipulation;cursor:pointer}
+ .badge-carousel-dots button:after{content:'';position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:9px;background:var(--muted);opacity:.4;transform:translate(-50%,-50%);transition:width 180ms ease,opacity 180ms ease}
+ .badge-carousel-dots button[aria-current]:after{width:18px;background:var(--accent);opacity:1}
+ .badge-carousel-status{grid-column:1/-1;text-align:center;font:500 11px Outfit;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:2px}
+ .badge-carousel-controls button:focus-visible,#badges-grid:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+}
+@media(prefers-reduced-motion:reduce){.badge-carousel-dots button:after{transition:none}}
