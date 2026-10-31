@@ -190,9 +190,9 @@ function render(){
 function renderBadgesPage(){
  if(!$('#badges-grid')) return;
  const list=(badgeDefinitions&&badgeDefinitions.length)?badgeDefinitions:DEFAULT_BADGE_DEFINITIONS;
- $('#badges-grid').innerHTML=list.map(b=>{
+ $('#badges-grid').innerHTML=list.map((b,index)=>{
   const earners=allContenders.filter(p=>(p.badges||[]).some(x=>x.id===b.id));
-  return `<article class="badge-card"><div class="badge-card-top"><div class="badge-gem-stage"><img src="${escapeHTML(b.image_url)}" alt="${escapeHTML(b.name)}" class="badge-card-image"></div><span class="badge-type-pill badge-type-${b.category}">${b.category==='ranking'?'Ranking Badge':'Milestone Badge'}</span></div><h3 class="badge-card-title">${escapeHTML(b.name)} ${escapeHTML(b.icon)}</h3><p class="badge-card-desc">${escapeHTML(b.description)}</p><div class="badge-card-criteria"><span class="badge-card-criteria-label">Eligibility Criteria</span><p class="badge-card-criteria-text">${escapeHTML(b.criteria)}</p></div><div class="badge-card-holders"><span>Current earners</span><strong>${earners.length} contender${earners.length===1?'':'s'}</strong></div></article>`;
+  return `<article class="badge-card minimal-badge"><div class="honour-art"><span class="honour-index">0${index+1}</span><img src="${escapeHTML(b.image_url)}" alt="${escapeHTML(b.name)}" class="badge-card-image"></div><div class="honour-copy"><span class="honour-category">${b.category==='ranking'?'PERFORMANCE':'MILESTONE'}</span><h3 class="badge-card-title">${escapeHTML(b.name)}</h3><p class="badge-card-desc">${escapeHTML(b.description)}</p><details class="honour-rule"><summary>How it’s earned <span>＋</span></summary><p class="badge-card-criteria-text">${escapeHTML(b.criteria)}</p></details></div><div class="badge-card-holders"><strong>${earners.length.toLocaleString('en-IN')}</strong><span>CONTENDERS<br>RECOGNISED</span></div></article>`;
  }).join('');
  updateStudentBadgeStatus();
 }
