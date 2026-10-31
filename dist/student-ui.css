@@ -216,3 +216,52 @@ main:focus,.page h1:focus{outline:none}
 :root .agenda-row.tone-2{--ribbon:#9c4b1e}
 
 @media(hover:none){.badge-chip:hover{transform:none}.island-trigger:hover{background:var(--glass)}}
+
+/* Mobile navigation: quiet list, sculpted icon tiles and a distinct current-page mark. */
+@media(max-width:700px){
+ .mobile-island.expanded{border-radius:27px;background:linear-gradient(145deg,#21182ef5,#100d19fa);border-color:#b893e64a;box-shadow:inset 0 1px #ffffff1a,0 24px 65px #0007}
+ .mobile-island .island-links{padding:8px 4px 5px;margin-top:11px;gap:5px;border-top:1px solid #c5a4eb20}
+ .menu-options-heading{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 12px;gap:14px}
+ .menu-options-heading>span{font:600 10px/1.5 'Plus Jakarta Sans',sans-serif;letter-spacing:1.8px;color:#b8a3ce}
+ .menu-options-heading>small{font:500 12px/1.5 Outfit,sans-serif;color:#d8c9e8;letter-spacing:.2px}
+ .mobile-island .island-links a.menu-option{position:relative;display:flex;align-items:center;gap:12px;padding:12px 11px;min-height:78px;border:1px solid transparent;border-radius:19px;background:transparent;box-shadow:none;touch-action:manipulation;transition:background 160ms var(--ease-out),border-color 160ms var(--ease-out);overflow:visible}
+ .mobile-island .island-links a.menu-option.active{background:linear-gradient(110deg,#9860d82b,#9860d80d)!important;border-color:#b58bdb42!important;box-shadow:inset 0 1px #ffffff0c!important}
+ .mobile-island .island-links a.menu-option .menu-option-icon{display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;border:1px solid #cab0e626;border-radius:14px;background:linear-gradient(145deg,#ffffff09,#ffffff02);color:#cebcdf;box-shadow:inset 0 1px #ffffff09}
+ .menu-option-icon svg{display:block;width:23px;height:23px}
+ .mobile-island .island-links a.menu-option.active .menu-option-icon{background:linear-gradient(145deg,#d8bbff,#b28bdf);border-color:#d5b2f5;color:#352044;box-shadow:inset 0 1px #fff5,0 4px 12px #7c3eb820}
+ .mobile-island .island-links a.menu-option .menu-option-copy{min-width:0;flex:1;font:500 15px/1.35 Outfit,sans-serif;letter-spacing:0;color:#f4edf9!important}
+ .menu-option-title{display:block;font-weight:550;overflow-wrap:anywhere}
+ .mobile-island .island-links a.menu-option small{font:400 11px/1.6 Outfit,sans-serif;margin-top:4px;color:#bba9ce!important;letter-spacing:0}
+ .mobile-island .island-links a.menu-option .menu-option-end{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;color:#a790be;margin-left:auto}
+ .menu-option-end svg{display:block;width:18px;height:18px}
+ .menu-option-arrow,.menu-option-check{display:block}
+ .menu-option-check{display:none}
+ .menu-option.active .menu-option-arrow{display:none}
+ .menu-option.active .menu-option-check{display:block;color:#dbc0fa}
+ .mobile-island .island-links a.menu-option:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+ .mobile-island .island-links a.menu-option:active{background:#b588da16}
+ :root[data-theme=light] .mobile-island.expanded{background:linear-gradient(145deg,#fffdfefa,#f5eefafa);border-color:#c8b1da;box-shadow:inset 0 1px #fff,0 24px 65px #43205e26}
+ :root[data-theme=light] .mobile-island .island-links{border-top-color:#d8c8e5}
+ :root[data-theme=light] .menu-options-heading>span{color:#735b85}
+ :root[data-theme=light] .menu-options-heading>small{color:#5c426e}
+ :root[data-theme=light] .mobile-island .island-links a.menu-option .menu-option-copy{color:#33213e!important}
+ :root[data-theme=light] .mobile-island .island-links a.menu-option small{color:#6b547e!important}
+ :root[data-theme=light] .mobile-island .island-links a.menu-option .menu-option-icon{background:#f0e8f7;border-color:#dfcfe9;color:#72508c;box-shadow:inset 0 1px #fff}
+ :root[data-theme=light] .mobile-island .island-links a.menu-option.active{background:linear-gradient(110deg,#e8daf5,#f0e7f8)!important;border-color:#ccb1e0!important;box-shadow:inset 0 1px #fff!important}
+ :root[data-theme=light] .mobile-island .island-links a.menu-option.active .menu-option-icon{background:linear-gradient(145deg,#9360bd,#754296);border-color:#8151a3;color:#fff;box-shadow:inset 0 1px #ffffff30,0 4px 12px #75429615}
+ :root[data-theme=light] .mobile-island .island-links a.menu-option .menu-option-end{color:#8a709e}
+ :root[data-theme=light] .menu-option.active .menu-option-check{color:#70448e}
+}
+@media(max-width:360px){
+ .mobile-island .island-links a.menu-option{gap:10px;padding:11px 8px}
+ .mobile-island .island-links a.menu-option .menu-option-icon{flex-basis:38px;width:38px;height:38px;border-radius:12px}
+ .mobile-island .island-links a.menu-option .menu-option-copy{font-size:14px}
+ .mobile-island .island-links a.menu-option small{font-size:11px}
+ .mobile-island .island-links a.menu-option .menu-option-end{flex-basis:20px;width:20px}
+}
+@media(hover:hover) and (pointer:fine){.mobile-island .island-links a.menu-option:not(.active):hover{background:var(--glass);border-color:var(--line)}}
+@media(max-width:700px){
+ .mobile-island .menu-options-heading>small{color:#d8c9e8!important;margin:0;font-size:12px}
+ .mobile-island .island-links a.menu-option .menu-option-copy{text-shadow:none}
+ :root[data-theme=light] .mobile-island .menu-options-heading>small{color:#5c426e!important}
+}
