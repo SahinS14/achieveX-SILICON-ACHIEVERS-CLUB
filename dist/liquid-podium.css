@@ -4,3 +4,15 @@
 @media(hover:hover) and (pointer:fine){.page-pill button:not([aria-current=page]):hover{background:#ffffff0d}.page-pill button[aria-current=page]:hover{background:#9bf3cf;color:#183d33}.pagination-controls .page-arrow:not(:disabled):hover{background:#4c3b5f}}
 @media(max-width:700px){.leaderboard-pagination{gap:14px}.pagination-controls{gap:9px;width:100%}.page-pill{gap:2px;padding:6px 9px;min-width:0}.page-pill button{width:30px;height:33px;font-size:12px;min-width:27px;flex-shrink:1}.pagination-controls .page-arrow{width:33px;height:33px;flex-shrink:0;font-size:21px}.pagination-controls .page-gap{font-size:12px}.round-tag{font-size:6px;letter-spacing:.6px}.arena-prize>.prize-trophy{width:27px;height:29px}.prize-trophy svg{width:25px;height:25px}.liquid-wave,.liquid-wave svg{height:23px}.liquid-wave{top:-15px}.wave-back{top:-18px}}
 @media(prefers-reduced-motion:reduce){.pod-liquid,.liquid-wave svg{animation:none}.liquid-wave svg{transform:translateX(-20%)}}
+/* Medal-coloured liquid fills, with slightly taller podium columns. */
+:root .pod-entry.first .pod-liquid{--liquid:#e2b752}
+:root .pod-entry.second .pod-liquid{--liquid:#9bbdd8}
+:root .pod-entry.third .pod-liquid{--liquid:#c38c68}
+:root[data-theme=light] .pod-entry.first .pod-liquid{--liquid:#b58a29}
+:root[data-theme=light] .pod-entry.second .pod-liquid{--liquid:#698fac}
+:root[data-theme=light] .pod-entry.third .pod-liquid{--liquid:#a46843}
+.pod-entry.first .pod-block{height:210px}
+.pod-entry.second .pod-block{height:166px}
+.pod-entry.third .pod-block{height:134px}
+.podium-scene{height:415px}
+@media(max-width:700px){.pod-entry.first .pod-block{height:190px}.pod-entry.second .pod-block{height:150px}.pod-entry.third .pod-block{height:119px}.podium-scene{height:375px}}
