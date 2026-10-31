@@ -199,7 +199,7 @@ function renderBadgesPage(){
  if(!$('#badges-grid')) return;
  const list=(badgeDefinitions&&badgeDefinitions.length)?badgeDefinitions:DEFAULT_BADGE_DEFINITIONS;
  $('#badges-grid').innerHTML=list.map((b,index)=>{
-  return `<article class="badge-card minimal-badge"><div class="honour-art"><span class="honour-index">0${index+1}</span><img src="${escapeHTML(b.image_url)}" alt="${escapeHTML(b.name)}" class="badge-card-image"></div><div class="honour-copy"><span class="honour-category">${b.category==='ranking'?'PERFORMANCE':'MILESTONE'}</span><h3 class="badge-card-title">${escapeHTML(b.name)}</h3><p class="badge-card-desc">${escapeHTML(b.description)}</p><details class="honour-rule"><summary>How it’s earned <span>＋</span></summary><p class="badge-card-criteria-text">${escapeHTML(b.criteria)}</p></details></div></article>`;
+  return `<article class="badge-card minimal-badge" style="--card-delay:${index*45}ms"><div class="honour-art"><span class="honour-index">0${index+1}</span><img src="${escapeHTML(b.image_url)}" alt="${escapeHTML(b.name)}" class="badge-card-image"></div><div class="honour-copy"><span class="honour-category">${b.category==='ranking'?'PERFORMANCE':'MILESTONE'}</span><h3 class="badge-card-title">${escapeHTML(b.name)}</h3><p class="badge-card-desc">${escapeHTML(b.description)}</p><details class="honour-rule"><summary>How it’s earned <span>＋</span></summary><p class="badge-card-criteria-text">${escapeHTML(b.criteria)}</p></details></div></article>`;
  }).join('');
 }
 let leaderboardLoadActive=false,lastResultsSignature="";
