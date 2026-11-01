@@ -83,6 +83,15 @@ async function audit(width,initialOffline=false){
   search.value='';search.dispatchEvent(new w.Event('input'));
   d.querySelector('[data-cat="senior"]').click();assert.equal(d.querySelectorAll('.rank-row').length,1);assert.equal(d.querySelector('#track').hidden,false);
   d.querySelector('[data-schedule="cs"]').click();d.querySelector('.agenda-row.revealed').click();assert.equal(d.querySelector('#syllabus-dialog').open,true);assert.equal(d.querySelector('#syllabus-title').textContent,'C Programming');
+  schedule.cs[0].scope='Updated topics';await w.loadSchedule();assert.equal(d.querySelector('#syllabus-scope').textContent,'Updated topics','open syllabus follows edits');
+  schedule.cs[0].revealed=false;await w.loadSchedule();assert.equal(d.querySelector('#syllabus-dialog').open,false,'hiding a subject closes its dialog');assert.equal(d.querySelector('#syllabus-link').hasAttribute('href'),false);assert.equal(d.querySelector('#syllabus-title').textContent,'');
+  const originalFetch=w.fetch;const pending=[];
+  w.fetch=()=>new Promise(resolve=>pending.push(resolve));
+  const oldRequest=w.loadSchedule(),newRequest=w.loadSchedule();
+  pending[1]({ok:true,json:async()=>({schedule:JSON.parse(JSON.stringify(schedule))})});await newRequest;
+  const obsolete=JSON.parse(JSON.stringify(schedule));obsolete.cs[0].revealed=true;
+  pending[0]({ok:true,json:async()=>({schedule:obsolete})});await oldRequest;
+  assert.equal(d.querySelector('.agenda-row').disabled,true,'obsolete revealed response cannot override a newer hidden response');w.fetch=originalFetch;
   d.querySelector('#close-syllabus').click();
   d.querySelector('#island-trigger').click();assert.equal(d.querySelector('#island-links').hidden,false);
   d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape'}));assert.equal(d.querySelector('#island-links').hidden,true);

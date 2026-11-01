@@ -257,4 +257,21 @@ class Tests(unittest.TestCase):
         self.assertIn('flawless', earned_ids)
         self.assertIn('badge_definitions', data)
 
+    def test_schedule_reveal_api_and_stale_revision(self):
+        from unittest.mock import patch
+        import schedule_config
+        self.login()
+        with tempfile.TemporaryDirectory() as tmp,patch.object(app,'ROOT',Path(tmp)):
+            status,initial=self.call('/api/admin/schedule');self.assertEqual(status,200)
+            schedule=initial['schedule'];schedule['cs'][0].update(subject='CS Round',scope='Loops',revealed=True)
+            self.assertEqual(self.call('/api/admin/schedule',{'schedule':schedule})[0],400)
+            status,saved=self.call('/api/admin/schedule',{'schedule':schedule,'revision':initial['revision']});self.assertEqual(status,200)
+            public=self.call('/api/schedule')[1]['schedule']
+            self.assertEqual(public['cs'][0]['subject'],'CS Round');self.assertNotIn('subject',public['junior'][0])
+            self.assertEqual(self.call('/api/admin/schedule',{'schedule':schedule,'revision':initial['revision']})[0],409)
+            schedule['cs'][0]['revealed']=False
+            self.assertEqual(self.call('/api/admin/schedule',{'schedule':schedule,'revision':saved['revision']})[0],200)
+            self.assertNotIn('subject',self.call('/api/schedule')[1]['schedule']['cs'][0])
+            self.assertEqual(app.get_week(),0)
+
 if __name__=='__main__':unittest.main()

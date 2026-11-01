@@ -1,0 +1,43 @@
+const {JSDOM}=require('jsdom');
+const fs=require('node:fs'),assert=require('node:assert/strict');
+const dom=new JSDOM(fs.readFileSync('dist/admin.html','utf8'),{url:'https://achievex.test/admin',runScripts:'outside-only',pretendToBeVisual:true});
+const w=dom.window,d=w.document,clone=x=>JSON.parse(JSON.stringify(x)),flush=()=>new Promise(r=>setImmediate(r));
+let saved=Object.fromEntries(['junior','cs','core'].map(track=>[track,Array.from({length:5},(_,i)=>({round:i+1,subject:track+' exam '+(i+1),scope:'Topics',syllabus_url:'',revealed:false,date:''}))])),revision='v1',conflict=false,lastSave;
+w.confirm=()=>true;w.HTMLElement.prototype.scrollIntoView=()=>{};
+w.fetch=async(url,options={})=>{
+ const path=url.split('/').pop();let result;
+ if(path==='session')result={published_week:0,storage:'supabase'};
+ else if(path==='participants')result={participants:[]};
+ else if(path==='schedule'&&options.method==='POST'){
+  lastSave=JSON.parse(options.body);
+  if(conflict)return {ok:false,status:409,json:async()=>({error:'Schedule changed. Reload the saved schedule.'})};
+  assert.equal(lastSave.revision,revision);saved=clone(lastSave.schedule);revision='v2';result={ok:true,schedule:clone(saved),revision};
+ }else if(path==='schedule')result={schedule:clone(saved),revision,presets:[{name:'Example',url:'https://example.com/syllabus.pdf'}]};
+ return {ok:true,json:async()=>result};
+};
+const change=el=>el.dispatchEvent(new w.Event('change',{bubbles:true}));
+const first=field=>d.querySelector('.schedule-edit-card [name="'+field+'"]');
+(async()=>{try{
+ w.eval(fs.readFileSync('dist/admin.js','utf8'));await flush();await flush();
+ assert.equal(d.querySelectorAll('.schedule-edit-card').length,5);
+ first('revealed').checked=true;change(first('revealed'));
+ assert.match(d.querySelector('#schedule-admin-status').textContent,/Unsaved/);
+ assert.match(d.querySelector('.schedule-row-status').textContent,/will be visible/);
+ const track=d.querySelector('#schedule-admin-track');track.value='cs';change(track);
+ first('subject').value='Edited CS';change(first('subject'));
+ track.value='junior';change(track);assert.equal(first('revealed').checked,true,'switching category preserves draft');
+ await w.load();assert.equal(first('revealed').checked,true,'participant refresh preserves unsaved schedule');
+ const submit=d.querySelector('#schedule-admin-form button[type="submit"]');
+ d.querySelector('#schedule-admin-form').dispatchEvent(new w.SubmitEvent('submit',{submitter:submit,cancelable:true}));await flush();
+ assert.equal(lastSave.schedule.junior[0].revealed,true);assert.equal(lastSave.schedule.cs[0].subject,'Edited CS');
+ assert.equal(lastSave.schedule.core[0].revealed,false,'other category unchanged');
+ assert.match(d.querySelector('.schedule-row-status').textContent,/Saved · visible/);
+ w.captureSchedule();assert.doesNotMatch(d.querySelector('#schedule-admin-status').textContent,/Unsaved/,'unchanged fields must not become dirty due to property order');
+ const preset=d.querySelector('.syllabus-preset');preset.value='https://example.com/syllabus.pdf';change(preset);
+ assert.equal(first('syllabus_url').value,preset.value);assert.match(d.querySelector('#schedule-admin-status').textContent,/Unsaved/);
+ conflict=true;d.querySelector('#schedule-admin-form').dispatchEvent(new w.SubmitEvent('submit',{submitter:submit,cancelable:true}));await flush();
+ assert.match(d.querySelector('#schedule-admin-status').textContent,/changed/);assert.equal(first('syllabus_url').value,preset.value,'conflict preserves draft');
+ w.confirm=()=>false;d.querySelector('#reload-schedule').click();await flush();assert.equal(first('syllabus_url').value,preset.value);
+ w.confirm=()=>true;d.querySelector('#reload-schedule').click();await flush();assert.equal(first('syllabus_url').value,'','explicit reload restores saved state');
+ console.log('Admin schedule passed: draft preservation, category isolation, save/reveal state, presets and stale-draft recovery');
+}finally{dom.window.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

@@ -471,7 +471,8 @@ class Handler(SimpleHTTPRequestHandler):
             if path=='/api/leaderboard':return self.json_response(public_results())
             if not self.authorized():return self.json_response({'error':'Unlock the admin panel first.'},401)
             if path=='/api/admin/schedule':
-                return self.json_response({'schedule':schedule_config.read(ROOT,URL,KEY),'presets':[{'name':n,'url':schedule_config.PDF+'#page='+str(p)} for n,p in schedule_config.PRESETS]})
+                schedule=schedule_config.read(ROOT,URL,KEY)
+                return self.json_response({'schedule':schedule,'revision':schedule_config.revision(schedule),'presets':[{'name':n,'url':schedule_config.PDF+'#page='+str(p)} for n,p in schedule_config.PRESETS]})
             if path=='/api/admin/session':return self.json_response({'authenticated':True,'storage':'supabase' if URL or KEY else 'sqlite','published_week':get_week()})
             if path=='/api/admin/participants':return self.json_response({'participants':[{**r,'total':total(r)} for r in all_rows()]})
             return self.json_response({'error':'Not found'},404)
@@ -527,9 +528,16 @@ class Handler(SimpleHTTPRequestHandler):
                 if body.get('commit') is True:save_rows(rows)
                 return self.json_response({'count':len(rows),'new':len(rows)-updates,'updates':updates,'saved':body.get('commit') is True})
             if path=='/api/admin/schedule':
-                try:schedule_config.save(ROOT,URL,KEY,body.get('schedule'))
+                try:
+                    checked=schedule_config.validate(body.get('schedule'))
+                    if not isinstance(body.get('revision'),str):raise ValidationError('Reload the admin schedule before saving.')
+                    # Detect stale admin drafts; serializes writers in this server instance.
+                    with LOCK:
+                        current=schedule_config.read(ROOT,URL,KEY)
+                        if body['revision']!=schedule_config.revision(current):return self.json_response({'error':'The saved schedule changed in another admin tab. Your draft was not saved. Reload the saved schedule before editing again.'},409)
+                        schedule_config.save(ROOT,URL,KEY,checked)
                 except ValueError as e:raise ValidationError(str(e))
-                return self.json_response({'ok':True})
+                return self.json_response({'ok':True,'schedule':checked,'revision':schedule_config.revision(checked)})
             if path=='/api/admin/settings':
                 week=body.get('published_week')
                 if isinstance(week,bool) or not isinstance(week,int) or not 0<=week<=5:raise ValidationError('Published week must be 0–5.')

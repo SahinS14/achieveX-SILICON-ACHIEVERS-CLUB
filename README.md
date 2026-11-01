@@ -85,3 +85,11 @@ See [AUDIT.md](AUDIT.md) for verified rules, test coverage and operational limit
 ### Student UI checks
 
 See [UI_AUDIT.md](UI_AUDIT.md) for the student usability pass and remaining rendered/device checks. Run `npm ci` then `npm run check` to include DOM interaction regression tests alongside Python API tests. DOM tests do not replace visual browser or real-phone testing.
+
+### Subject reveals
+
+In Admin → Schedule & subject reveals, select Junior / Senior CS / Senior Core, edit a round's subject and either its scope or an HTTPS syllabus URL, enable **Reveal after saving**, then select **Save schedule & reveals**. Turning Reveal off and saving hides the subject again. Dates are independent and may be shown before the subject is revealed. Result publication is separate and is never changed by schedule saves.
+
+Unsaved edits are retained across category changes and participant refreshes. Each round distinguishes saved visibility from pending changes; **Reload saved schedule** explicitly discards the draft after confirmation. Revision checks reject stale drafts from another tab. Student schedule pages refresh every 15 seconds and on focus; edited or hidden subjects update/close open syllabus dialogs. Previously viewed or downloaded material cannot be recalled.
+
+The private Storage JSON backend uses revision checks and a per-process write lock. These prevent ordinary stale-tab overwrites but do not provide transactional compare-and-swap for simultaneous writes on different Vercel instances. Use a database transaction/RPC for strict multi-admin concurrency. Schedule tests use temporary files and never toggle the live configuration.

@@ -1,9 +1,10 @@
 const $=s=>document.querySelector(s),form=$('#participant-form');let records=[],editing=false,csvContent='',noticeTimer;
+let adminSchedule=null,savedAdminSchedule=null,syllabusPresets=[],scheduleRevision='',scheduleDirty=false,scheduleSaving=false,displayedScheduleTrack='junior';
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const number=n=>Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});
 async function api(path,body){const response=await fetch('/api/admin/'+path,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined});const data=await response.json();if(!response.ok){if(response.status===401&&path!=='login')locked();throw Error(data.error||'Request failed.');}return data;}
 function notify(message,error=false){clearTimeout(noticeTimer);$('#notice').textContent=message;$('#notice').classList.toggle('error',error);$('#notice').hidden=false;noticeTimer=setTimeout(()=>$('#notice').hidden=true,7000);}
-function locked(){$('#gate').hidden=false;$('#workspace').hidden=true;$('#logout').hidden=true;records=[];$('#roster').replaceChildren();}
+function locked(){$('#gate').hidden=false;$('#workspace').hidden=true;$('#logout').hidden=true;records=[];$('#roster').replaceChildren();adminSchedule=null;savedAdminSchedule=null;scheduleDirty=false;scheduleRevision='';$('#schedule-admin-rows').replaceChildren();}
 async function load(){const session=await api('session');$('#published-week').value=session.published_week;$('#storage').textContent=session.storage==='supabase'?'SUPABASE CONNECTED':'LOCAL SQLITE · SUPABASE NOT CONFIGURED';records=(await api('participants')).participants;$('#gate').hidden=true;$('#workspace').hidden=false;$('#logout').hidden=false;$('#stat-count').textContent=records.length;$('#stat-categories').textContent=records.filter(r=>r.year===1).length+' / '+records.filter(r=>r.year>1).length;renderRoster();await loadAdminSchedule();}
 $('#login').addEventListener('submit',async e=>{e.preventDefault();const button=e.submitter;button.disabled=true;$('#login-error').textContent='';try{await api('login',{pin:$('#pin').value});$('#pin').value='';await load();}catch(error){$('#login-error').textContent=error.message;}finally{button.disabled=false;}});
 $('#logout').addEventListener('click',async()=>{try{await api('logout',{});locked();}catch(e){notify(e.message,true);}});
@@ -25,10 +26,50 @@ load().catch(e=>{locked();if(e.message!=='Unlock the admin panel first.')$('#log
 
 $('#roster').addEventListener('click',async e=>{const button=e.target.closest('[data-delete]');if(!button)return;const record=records.find(r=>r.sic===button.dataset.delete);if(!record)return;if(!confirm(`Delete ${record.full_name} (${record.sic}) and all five weekly scores? This cannot be undone.`))return;button.disabled=true;try{await api('delete',{sic:record.sic,confirm:true});if(form.elements.sic.value===record.sic)reset();await load();notify('Participant and scores deleted. Leaderboard updated.');}catch(error){button.disabled=false;notify(error.message,true);}});
 
-let adminSchedule=null,syllabusPresets=[];
-async function loadAdminSchedule(){try{const data=await api('schedule');adminSchedule=data.schedule;syllabusPresets=data.presets;renderAdminSchedule();$('#schedule-admin-status').textContent='Drafts stay private until their reveal switch is enabled.';}catch(error){$('#schedule-admin-status').textContent=error.message;}}
-function captureSchedule(){if(!adminSchedule)return;const track=$('#schedule-admin-track').value;document.querySelectorAll('.schedule-edit-card').forEach((el,i)=>{adminSchedule[track][i]={round:i+1,subject:el.querySelector('[name="subject"]').value,scope:el.querySelector('[name="scope"]').value,syllabus_url:el.querySelector('[name="syllabus_url"]').value,date:el.querySelector('[name="date"]').value,revealed:el.querySelector('[name="revealed"]').checked}});}
-function renderAdminSchedule(){if(!adminSchedule)return;const track=$('#schedule-admin-track').value;$('#schedule-admin-rows').innerHTML=adminSchedule[track].map((item,i)=>`<article class="schedule-edit-card"><div class="schedule-edit-heading"><h3>Round 0${i+1}</h3><label class="reveal-switch"><input type="checkbox" name="revealed" ${item.revealed?'checked':''}>Reveal to students</label></div><div class="form-grid"><label>Assessment subject<input name="subject" maxlength="160" value="${safe(item.subject)}" placeholder="Keep as draft until ready"></label><label>Date (optional)<input type="date" name="date" value="${safe(item.date)}"></label><label>Curriculum reference preset<select class="syllabus-preset"><option value="">Choose a reference…</option>${syllabusPresets.map(p=>`<option value="${safe(p.url)}">${safe(p.name)}</option>`).join('')}</select></label><label>Syllabus URL<input name="syllabus_url" type="url" value="${safe(item.syllabus_url)}" placeholder="https://…#page=37"></label></div><label class="scope-label">Assessment scope / topics<textarea name="scope" maxlength="6000" rows="4" placeholder="Specific modules, topics, exclusions, or preparation instructions">${safe(item.scope)}</textarea></label></article>`).join('');}
-let previousScheduleTrack='junior';$('#schedule-admin-track').addEventListener('change',()=>{const next=$('#schedule-admin-track').value;$('#schedule-admin-track').value=previousScheduleTrack;captureSchedule();$('#schedule-admin-track').value=next;previousScheduleTrack=next;renderAdminSchedule();});
-$('#schedule-admin-rows').addEventListener('change',e=>{if(e.target.matches('.syllabus-preset')&&e.target.value)e.target.closest('.schedule-edit-card').querySelector('[name="syllabus_url"]').value=e.target.value;});
-$('#schedule-admin-form').addEventListener('submit',async e=>{e.preventDefault();captureSchedule();e.submitter.disabled=true;try{await api('schedule',{schedule:adminSchedule});notify('Schedule saved. Only revealed subjects and syllabus details are public.');}catch(error){notify(error.message,true);}finally{e.submitter.disabled=false;}});
+const scheduleKey=value=>JSON.stringify(value,['junior','cs','core','round','subject','scope','syllabus_url','date','revealed']);
+function scheduleStatus(){
+ $('#schedule-admin-status').textContent=scheduleDirty?'Unsaved changes. Reveal switches take effect only after Save schedule & reveals.':'Saved schedule loaded. Hidden subjects stay private; exam dates can be visible before subject reveal.';
+ document.querySelectorAll('.schedule-edit-card').forEach((card,i)=>{
+  const current=adminSchedule?.[displayedScheduleTrack]?.[i],saved=savedAdminSchedule?.[displayedScheduleTrack]?.[i];
+  const changed=scheduleKey(current)!==scheduleKey(saved);
+  card.querySelector('.schedule-row-status').textContent=changed?(current.revealed?'Unsaved · will be visible after saving':'Unsaved · will be hidden after saving'):(saved?.revealed?'Saved · visible to students':'Saved · subject hidden');
+ });
+}
+async function loadAdminSchedule(force=false){
+ if(scheduleSaving)return;
+ if(scheduleDirty&&!force){scheduleStatus();return;}
+ try{
+  const data=await api('schedule');adminSchedule=data.schedule;savedAdminSchedule=JSON.parse(JSON.stringify(data.schedule));scheduleRevision=data.revision;syllabusPresets=data.presets;scheduleDirty=false;
+  displayedScheduleTrack=$('#schedule-admin-track').value;renderAdminSchedule();scheduleStatus();
+ }catch(error){$('#schedule-admin-status').textContent=error.message;}
+ $('#schedule-admin-form button[type="submit"]').disabled=!adminSchedule;
+}
+function captureSchedule(){
+ if(!adminSchedule||scheduleSaving)return;
+ document.querySelectorAll('.schedule-edit-card').forEach((el,i)=>{adminSchedule[displayedScheduleTrack][i]={round:i+1,subject:el.querySelector('[name="subject"]').value,scope:el.querySelector('[name="scope"]').value,syllabus_url:el.querySelector('[name="syllabus_url"]').value,date:el.querySelector('[name="date"]').value,revealed:el.querySelector('[name="revealed"]').checked};});
+ scheduleDirty=scheduleKey(adminSchedule)!==scheduleKey(savedAdminSchedule);scheduleStatus();
+}
+function renderAdminSchedule(){
+ if(!adminSchedule)return;
+ displayedScheduleTrack=$('#schedule-admin-track').value;
+ $('#schedule-admin-rows').innerHTML=adminSchedule[displayedScheduleTrack].map((item,i)=>`<article class="schedule-edit-card"><div class="schedule-edit-heading"><h3>Round 0${i+1}</h3><label class="reveal-switch"><input type="checkbox" name="revealed" ${item.revealed?'checked':''}>Reveal after saving</label></div><p class="schedule-row-status" role="status"></p><div class="form-grid"><label>Assessment subject<input name="subject" maxlength="160" value="${safe(item.subject)}" placeholder="Keep as draft until ready"></label><label>Date (optional, public even before reveal)<input type="date" name="date" value="${safe(item.date)}"></label><label>Curriculum reference preset<select class="syllabus-preset"><option value="">Choose a reference…</option>${syllabusPresets.map(p=>`<option value="${safe(p.url)}">${safe(p.name)}</option>`).join('')}</select></label><label>Syllabus URL<input name="syllabus_url" type="url" value="${safe(item.syllabus_url)}" placeholder="https://…#page=37"></label></div><label class="scope-label">Assessment scope / topics<textarea name="scope" maxlength="6000" rows="4" placeholder="Add the exact assessment topics or a syllabus URL before revealing">${safe(item.scope)}</textarea></label></article>`).join('');
+ scheduleStatus();
+}
+$('#schedule-admin-track').addEventListener('change',()=>{captureSchedule();renderAdminSchedule();});
+$('#schedule-admin-rows').addEventListener('input',captureSchedule);
+$('#schedule-admin-rows').addEventListener('change',event=>{
+ if(event.target.matches('.syllabus-preset')&&event.target.value)event.target.closest('.schedule-edit-card').querySelector('[name="syllabus_url"]').value=event.target.value;
+ captureSchedule();
+});
+$('#reload-schedule').addEventListener('click',()=>{if(scheduleSaving)return;if(scheduleDirty&&!confirm('Discard unsaved schedule edits and reload the saved version?'))return;loadAdminSchedule(true);});
+window.addEventListener('beforeunload',event=>{if(scheduleDirty){event.preventDefault();event.returnValue='';}});
+$('#schedule-admin-form').addEventListener('submit',async event=>{
+ event.preventDefault();if(!adminSchedule||scheduleSaving)return;captureSchedule();scheduleSaving=true;
+ const controls=[...document.querySelectorAll('#schedule-admin-form input,#schedule-admin-form select,#schedule-admin-form textarea,#schedule-admin-form button,#schedule-admin-track,#reload-schedule')];controls.forEach(control=>control.disabled=true);
+ try{
+  const data=await api('schedule',{schedule:adminSchedule,revision:scheduleRevision});
+  adminSchedule=data.schedule;savedAdminSchedule=JSON.parse(JSON.stringify(data.schedule));scheduleRevision=data.revision;scheduleDirty=false;renderAdminSchedule();
+  notify('Schedule saved. Students see only revealed subjects; result publication is unchanged.');
+ }catch(error){$('#schedule-admin-status').textContent=error.message;notify(error.message,true);}
+ finally{scheduleSaving=false;controls.forEach(control=>{if(control.isConnected)control.disabled=false;});}
+});

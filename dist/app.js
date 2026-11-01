@@ -207,7 +207,7 @@ document.querySelectorAll('[data-cat],#week,#track').forEach(control=>control.ad
 ['#week','#track'].forEach(selector=>$(selector).addEventListener('change',animateRankings));
 animateBoard();animateRankings();
 
-let scheduleLoaded=false,scheduleFailed=false;
+let scheduleLoaded=false,scheduleFailed=false,scheduleRequest=0,openSyllabus=null;
 let scheduleCategory='junior',scheduleData={junior:[],cs:[],core:[]};const scheduleLabels={junior:'Junior category',cs:'Senior / Computer Science',core:'Senior / Core'};
 function renderSchedule(){
  $('#agenda-category').textContent=scheduleLabels[scheduleCategory].toUpperCase();
@@ -217,16 +217,35 @@ function renderSchedule(){
  $('#schedule-list').innerHTML=Array.from({length:5},(_,i)=>{const e=entries[i]||{round:i+1,revealed:false};return `<button type="button" class="agenda-row tone-${i%3} ${e.revealed?'revealed':'unrevealed'}" data-round="${i}" ${e.revealed?'':'disabled'}><div class="agenda-round"><span>ROUND</span><b>0${i+1}</b></div><div class="agenda-main"><span>${scheduleLabels[scheduleCategory]}</span><h3>${e.revealed?escapeHTML(e.subject):'Subject reveal coming soon'}</h3><p>${e.revealed?'View syllabus ↗':'Subject to be revealed'}</p></div><div class="agenda-points"><b>100</b><span>POINTS</span></div><div class="agenda-date"><h4>${e.date?escapeHTML(new Intl.DateTimeFormat('en-IN',{day:'numeric',month:'short',year:'numeric'}).format(new Date(e.date+'T12:00:00'))):'Date to be announced'}</h4><p>${e.revealed?'SYLLABUS AVAILABLE':'REVEAL COMING SOON'}</p></div><span class="agenda-arrow" aria-hidden="true">${e.revealed?'↗':'⌁'}</span></button>`}).join('');
  document.querySelectorAll('[data-schedule]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.schedule===scheduleCategory)));
 }
-async function loadSchedule(){
- try{const r=await fetch('/api/schedule',{cache:'no-store'});if(!r.ok)throw Error('Schedule unavailable');scheduleData=(await r.json()).schedule;scheduleLoaded=true;scheduleFailed=false;renderSchedule();}
- catch(e){scheduleFailed=true;renderSchedule();}
- finally{$('#schedule-list').setAttribute('aria-busy','false');}
+function clearSyllabus(){
+ openSyllabus=null;$('#syllabus-dialog').close();$('#syllabus-title').textContent='';$('#syllabus-category').textContent='';$('#syllabus-scope').textContent='';$('#syllabus-link').removeAttribute('href');$('#syllabus-link').hidden=true;
 }
-
-document.querySelectorAll('[data-schedule]').forEach(b=>b.addEventListener('click',()=>{scheduleCategory=b.dataset.schedule;renderSchedule()}));renderSchedule();loadSchedule();
-$('#schedule-list').addEventListener('click',event=>{const button=event.target.closest('[data-round]');if(!button)return;const item=scheduleData[scheduleCategory][Number(button.dataset.round)];if(!item?.revealed)return;$('#syllabus-title').textContent=item.subject;$('#syllabus-category').textContent=scheduleLabels[scheduleCategory]+' / Round '+item.round;$('#syllabus-scope').textContent=item.scope||'Syllabus reference';const link=$('#syllabus-link');link.hidden=!item.syllabus_url;if(item.syllabus_url&&new URL(item.syllabus_url).protocol==='https:')link.href=item.syllabus_url;$('#syllabus-dialog').showModal();});
-$('#close-syllabus').addEventListener('click',()=>$('#syllabus-dialog').close());
+function populateSyllabus(item,track){
+ $('#syllabus-title').textContent=item.subject;$('#syllabus-category').textContent=scheduleLabels[track]+' / Round '+item.round;$('#syllabus-scope').textContent=item.scope||'Syllabus reference';
+ const link=$('#syllabus-link');link.removeAttribute('href');let validLink=false;
+ try{validLink=!!item.syllabus_url&&new URL(item.syllabus_url).protocol==='https:';}catch{}
+ link.hidden=!validLink;if(validLink)link.href=item.syllabus_url;
+}
+async function loadSchedule(){
+ const request=++scheduleRequest;
+ try{
+  const response=await fetch('/api/schedule',{cache:'no-store'});if(!response.ok)throw Error('Schedule unavailable');const payload=await response.json();
+  if(request!==scheduleRequest)return;
+  if(!payload.schedule||!['junior','cs','core'].every(track=>Array.isArray(payload.schedule[track])&&payload.schedule[track].length===5))throw Error('Invalid schedule response');
+  scheduleData=payload.schedule;scheduleLoaded=true;scheduleFailed=false;renderSchedule();
+  if(openSyllabus){const item=scheduleData[openSyllabus.track][openSyllabus.index];if(!item?.revealed)clearSyllabus();else populateSyllabus(item,openSyllabus.track);}
+ }catch(error){if(request!==scheduleRequest)return;scheduleFailed=true;clearSyllabus();renderSchedule();}
+ finally{if(request===scheduleRequest)$('#schedule-list').setAttribute('aria-busy','false');}
+}
+document.querySelectorAll('[data-schedule]').forEach(button=>button.addEventListener('click',()=>{clearSyllabus();scheduleCategory=button.dataset.schedule;renderSchedule();}));renderSchedule();loadSchedule();
+$('#schedule-list').addEventListener('click',event=>{
+ const button=event.target.closest('[data-round]');if(!button||button.disabled||scheduleFailed)return;const index=Number(button.dataset.round),item=scheduleData[scheduleCategory][index];if(!item?.revealed)return;
+ openSyllabus={track:scheduleCategory,index};populateSyllabus(item,scheduleCategory);$('#syllabus-dialog').showModal();
+});
+$('#close-syllabus').addEventListener('click',clearSyllabus);
+$('#syllabus-dialog').addEventListener('close',()=>{openSyllabus=null;});
 $('#syllabus-dialog').addEventListener('click',e=>{if(e.target===$('#syllabus-dialog')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close();}});
+setInterval(()=>{if(!document.hidden&&!$('#schedule').hidden)loadSchedule();},15000);
 window.addEventListener('focus',loadSchedule);window.addEventListener('hashchange',()=>{if(location.hash==='#schedule')loadSchedule()});
 // Replay the complete scorecard when it becomes visible, including returning to the same route.
 let scoreFrame=0;
