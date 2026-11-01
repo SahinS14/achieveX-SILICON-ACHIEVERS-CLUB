@@ -25,3 +25,9 @@ input,select,textarea{font-size:16px}
 .schedule-row-status{font:500 12px/1.7 Outfit;color:var(--accent);margin:0 0 18px;padding:9px 12px;border-radius:8px;background:#b488d90c;border:1px solid #b488d922}
 #schedule-admin-status{min-height:28px}
 #reload-schedule{min-height:44px;font-size:12px}
+
+.admin-brand{display:flex;align-items:center;gap:11px}
+.admin-brand>img{display:block;width:50px;height:50px;object-fit:contain;background:#000;border-radius:50%;flex-shrink:0}
+header .admin-brand>.admin-wordmark{color:var(--text);line-height:1}
+.admin-wordmark>span{color:var(--accent)}
+@media(max-width:600px){header{flex-wrap:wrap}header>div{margin-left:auto}.admin-brand>img{width:44px;height:44px}}
