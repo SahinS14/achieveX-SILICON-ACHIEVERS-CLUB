@@ -56,10 +56,15 @@ def validate(data):
                     if not re.fullmatch(r'\d{4}-\d{2}-\d{2}',date):raise ValueError()
                     datetime.date.fromisoformat(date)
                 except ValueError:raise ValueError('Use a valid examination date.')
+            start=entry.get('start_time','');end=entry.get('end_time','')
+            if not isinstance(start,str) or not isinstance(end,str):raise ValueError('Exam times must be text.')
+            if bool(start)!=bool(end):raise ValueError('Provide both start and end times.')
+            if start and (not date or not re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d',start) or not re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d',end) or end<=start):raise ValueError('Provide a date and valid start/end times, with end after start (IST).')
             reveal=entry.get('revealed',False)
             if not isinstance(reveal,bool):raise ValueError('Invalid reveal option.')
             if reveal and (not subject or not(scope or link)):raise ValueError(f'{track} round {i+1}: add a subject and scope or syllabus link before revealing.')
             result[track].append({'round':i+1,'subject':subject,'scope':scope,'syllabus_url':link,'revealed':reveal,'date':date})
+            if start:result[track][-1].update(start_time=start,end_time=end)
     return result
 def save(root,url,key,data):
     data=validate(data)
@@ -77,6 +82,7 @@ def public(data):
         result[track]=[]
         for entry in entries:
             visible={k:entry[k] for k in ('round','revealed','date')}
+            if entry.get('start_time'):visible.update(start_time=entry['start_time'],end_time=entry['end_time'])
             if entry['revealed']:visible.update({k:entry[k] for k in ('subject','scope','syllabus_url')})
             result[track].append(visible)
     return result

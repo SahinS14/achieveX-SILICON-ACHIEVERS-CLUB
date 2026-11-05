@@ -43,3 +43,9 @@ class ScheduleTests(unittest.TestCase):
     def test_revision_independent_of_key_order(self):
         original=config.defaults();reversed_data=dict(reversed(list(original.items())))
         self.assertEqual(config.revision(original),config.revision(reversed_data))
+    def test_exam_times_validate_and_publish(self):
+        data=config.defaults();data['junior'][0].update(date='2026-11-14',start_time='11:00',end_time='12:30')
+        self.assertEqual(config.public(data)['junior'][0]['start_time'],'11:00')
+        for start,end in [('15:30','15:00'),('25:00','26:00'),('11:00','')]:
+            data['junior'][0].update(start_time=start,end_time=end)
+            with self.assertRaises(ValueError):config.validate(data)

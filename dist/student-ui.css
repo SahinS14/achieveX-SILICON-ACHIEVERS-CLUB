@@ -328,3 +328,6 @@ main:focus,.page h1:focus{outline:none}
 @media(max-width:1100px){.results-coming{grid-template-columns:1fr;padding:30px;gap:15px}.coming-art{max-width:420px;width:100%;margin:auto}.coming-copy{text-align:center}.coming-copy>p{margin-left:auto;margin-right:auto}}
 @media(max-width:700px){.results-coming{margin:25px 0 10px;border-radius:25px;padding:25px 20px 30px;gap:9px}.coming-art{max-width:350px}.coming-bubble{font-size:12px;left:8%;padding:8px 13px}.coming-copy h2{font-size:34px;letter-spacing:-1px;margin:14px 0}.coming-copy>p{font-size:14px;line-height:1.8;max-width:30ch}.coming-kicker{font-size:9px}.coming-action{font-size:13px;gap:14px}.coming-caption{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.student-wave{animation:none}}
+.agenda-date .exam-time{display:block;font:500 13px/1.7 Outfit;color:var(--text);margin:8px 0;white-space:nowrap}
+:root[data-theme=light] .agenda-date .exam-time{color:#3c293f}
+@media(max-width:700px){.agenda-date .exam-time{font-size:13px;white-space:normal;margin:4px 0 0}}
