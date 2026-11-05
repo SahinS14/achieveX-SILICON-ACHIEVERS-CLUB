@@ -221,7 +221,7 @@ function clearSyllabus(){
  openSyllabus=null;$('#syllabus-dialog').close();$('#syllabus-title').textContent='';$('#syllabus-category').textContent='';$('#syllabus-scope').textContent='';$('#syllabus-link').removeAttribute('href');$('#syllabus-link').hidden=true;
 }
 function populateSyllabus(item,track){
- $('#syllabus-title').textContent=item.subject;$('#syllabus-category').textContent=scheduleLabels[track]+' / Round '+item.round;$('#syllabus-scope').textContent=item.scope||'Syllabus reference';
+ $('#syllabus-title').textContent=item.subject;$('#syllabus-category').textContent=scheduleLabels[track]+' / Round '+item.round;$('#syllabus-scope').innerHTML=(item.scope||'Syllabus reference').split(/\n\s*\n/).map(block=>{const colon=block.indexOf(':');return colon>0&&colon<65?`<section class="syllabus-area"><h3>${escapeHTML(block.slice(0,colon))}</h3><p>${escapeHTML(block.slice(colon+1).trim())}</p></section>`:`<p class="syllabus-intro">${escapeHTML(block)}</p>`;}).join('');
  const link=$('#syllabus-link');link.removeAttribute('href');let validLink=false;
  try{validLink=!!item.syllabus_url&&new URL(item.syllabus_url).protocol==='https:';}catch{}
  link.hidden=!validLink;if(validLink)link.href=item.syllabus_url;
