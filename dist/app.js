@@ -88,6 +88,9 @@ $('#badge-detail-dialog').addEventListener('click',event=>{if(event.target===eve
 
 let lastPodiumKey='',leaderboardPage=1,lastPaginationFilter='';const pageSize=15;
 function render(){
+ const awaiting=hasResults&&!allContenders.some(p=>(p.scores||[]).slice(0,publishedWeek).some(score=>score!==null));
+ $('#results-coming').hidden=!awaiting;
+ for(const selector of ['.filters','.standings-jump','.podium-scene','.podium-motto','.ranking-panel'])$('#leaderboard '+selector).hidden=awaiting;
  const key=category==='junior'?'junior':$('#track').value;
  const data=[...datasets[key]].filter(p=>publishedWeek>0&&(period==='all'?p.scores.slice(0,publishedWeek).some(s=>s!==null):p.scores[Number(period)]!==null)).sort((a,b)=>total(b)-total(a)||a.id.localeCompare(b.id));
  const scoreCounts=new Map();data.forEach(p=>scoreCounts.set(total(p),(scoreCounts.get(total(p))||0)+1));
@@ -184,7 +187,7 @@ async function loadLeaderboard(){
  finally{leaderboardLoadActive=false;}
 }
 document.querySelectorAll('[data-cat]').forEach(b=>b.addEventListener('click',()=>{category=b.dataset.cat;document.querySelectorAll('[data-cat]').forEach(x=>x.setAttribute('aria-pressed',x===b));$('#track').hidden=category==='junior';render()}));$('#week').addEventListener('change',e=>{period=e.target.value;render()});$('#track').addEventListener('change',render);$('#search').addEventListener('input',render);render();renderBadgesPage();loadLeaderboard();
-function theme(value){document.documentElement.dataset.theme=value;document.querySelectorAll('button[data-theme]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.theme===value));document.querySelector('meta[name="theme-color"]').content=value==='dark'?'#100c1e':'#f2edff';try{localStorage.setItem('ax-theme',value)}catch(e){}}
+function theme(value){document.documentElement.dataset.theme=value;document.querySelectorAll('button[data-theme]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.theme===value));document.querySelector('meta[name="theme-color"]').content=value==='dark'?'#100c1e':'#f2edff';}
 document.querySelectorAll('button[data-theme]').forEach(b=>b.addEventListener('click',()=>theme(b.dataset.theme)));theme(document.documentElement.dataset.theme||'dark');
 const labels={leaderboard:'Leaderboard',badges:'Badges & Achievements',schedule:'Schedule of Examination',about:'About Achievers’ Club'};function renderRoute(moveFocus=false){const page=location.hash.slice(1) in labels?location.hash.slice(1):'leaderboard';document.body.dataset.page=page;document.querySelectorAll('.page').forEach(p=>p.hidden=p.id!==page);document.querySelectorAll('[data-page]').forEach(a=>{a.classList.toggle('active',a.dataset.page===page);if(a.dataset.page===page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});$('#page-label').textContent=labels[page];$('#island-title').textContent=labels[page];document.title=`${labels[page]} — AchieveX`;window.scrollTo({top:0,behavior:"instant"});if(page==='badges')renderBadgesPage();if(moveFocus){const heading=$('#'+page+' h1');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});}}
 let activeTransition;

@@ -301,3 +301,30 @@ main:focus,.page h1:focus{outline:none}
 .syllabus-area{padding:17px 0;border-top:1px solid var(--line)}
 .syllabus-area h3{font:600 18px/1.4 Outfit;margin:0 0 8px;color:var(--text)}
 .syllabus-area p{font:400 15px/1.8 Outfit;margin:0;color:var(--muted)}
+
+/* Welcoming pre-results scene. Illustration moves; the reading surface stays still. */
+.results-coming{position:relative;isolation:isolate;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:28px;margin:30px 0 20px;padding:44px 34px;border:1px solid #d4b0ff35;border-radius:30px;background:radial-gradient(ellipse at 18% 10%,#9c62df20,transparent 65%),linear-gradient(130deg,#ffffff0d,#ffffff02),#171020;box-shadow:inset 0 1px #ffffff20,0 22px 65px #07030f30;overflow:hidden}
+.results-coming:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(115deg,transparent 30%,#ffffff05 45%,transparent 60%);pointer-events:none}
+.coming-art{position:relative;min-width:0;align-self:center}
+.welcome-students{width:100%;height:auto;display:block;filter:drop-shadow(0 12px 18px #0002)}
+.coming-bubble{position:absolute;left:12%;top:0;padding:10px 17px;background:linear-gradient(135deg,#483359,#2a1d3b);border:1px solid #d7b5ff44;border-radius:18px 18px 18px 4px;box-shadow:inset 0 1px #ffffff20;font:500 13px Outfit;color:#f3e8ff;transform:rotate(-5deg)}
+.coming-bubble>span{color:#e1c58d;margin-left:8px}
+.coming-kicker{font:600 10px/1.6 'Plus Jakarta Sans';letter-spacing:1.8px;color:#c2a4dd}
+.coming-copy h2{font:600 clamp(30px,3.4vw,46px)/1.12 Outfit;letter-spacing:-1.3px;color:#f8f1ff;margin:17px 0}
+.coming-copy h2 em{font-style:normal;color:#c9a6f1;font-weight:450}
+.coming-copy>p{font:400 15px/1.8 Outfit;color:#c6b7d6;max-width:34ch;margin:0 0 24px}
+.coming-action{display:inline-flex;align-items:center;justify-content:space-between;gap:20px;min-height:48px;padding:13px 19px;border:1px solid #e1caff44;border-radius:30px;background:linear-gradient(130deg,#ceb0f429,#b38ad410);box-shadow:inset 0 1px #fff2;font:500 14px Outfit;color:#f3e6ff!important}
+.coming-action>span{font-size:20px}
+.coming-caption{display:block;font:400 12px/1.7 Outfit;color:#b5a2c8;margin-top:18px}
+.student-wave{transform-box:view-box;animation:student-hello 4.8s ease-in-out infinite}
+.boy-wave{transform-origin:199px 159px}
+.girl-wave{transform-origin:377px 161px;animation-delay:-1.1s}
+@keyframes student-hello{0%,45%,100%{transform:rotate(0deg)}8%,24%{transform:rotate(9deg)}16%,32%{transform:rotate(-7deg)}}
+:root[data-theme=light] .results-coming{background:radial-gradient(ellipse at 18% 10%,#d6b4f430,transparent 65%),linear-gradient(135deg,#fff,#f0e7f8);border-color:#d3bddf;box-shadow:inset 0 1px #fff,0 22px 65px #45225f0d}
+:root[data-theme=light] .results-coming .coming-copy h2{color:#35223f}
+:root[data-theme=light] .results-coming .coming-copy h2 em{color:#77509b}
+:root[data-theme=light] .results-coming :is(.coming-kicker,.coming-caption,.coming-copy>p){color:#655073}
+:root[data-theme=light] .results-coming .coming-action{color:#48285f!important;border-color:#bea0d5;background:#e9dbf4}
+@media(max-width:1100px){.results-coming{grid-template-columns:1fr;padding:30px;gap:15px}.coming-art{max-width:420px;width:100%;margin:auto}.coming-copy{text-align:center}.coming-copy>p{margin-left:auto;margin-right:auto}}
+@media(max-width:700px){.results-coming{margin:25px 0 10px;border-radius:25px;padding:25px 20px 30px;gap:9px}.coming-art{max-width:350px}.coming-bubble{font-size:12px;left:8%;padding:8px 13px}.coming-copy h2{font-size:34px;letter-spacing:-1px;margin:14px 0}.coming-copy>p{font-size:14px;line-height:1.8;max-width:30ch}.coming-kicker{font-size:9px}.coming-action{font-size:13px;gap:14px}.coming-caption{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.student-wave{animation:none}}

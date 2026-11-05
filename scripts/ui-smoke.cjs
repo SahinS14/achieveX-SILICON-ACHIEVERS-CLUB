@@ -61,6 +61,11 @@ async function audit(width,initialOffline=false){
   assert.equal(d.querySelector('.demo-pill'),null,'no demo status tag');
   assert.equal(d.querySelector('.list-footer>span').textContent,'Tied scores share a rank · Next rank continues consecutively');
   assert.equal(d.querySelector('#rows').getAttribute('aria-busy'),'false');
+  assert.equal(d.documentElement.dataset.theme,'dark','every visit defaults to dark');
+  const originalScores=participants.map(p=>p.scores);participants.forEach(p=>p.scores=[null,null,null,null,null]);await w.loadLeaderboard();
+  assert.equal(d.querySelector('#results-coming').hidden,false,'welcome scene before graded results');assert.equal(d.querySelector('.ranking-panel').hidden,true);assert.equal(d.querySelector('.podium-scene').hidden,true);
+  participants.forEach((p,i)=>p.scores=originalScores[i]);await w.loadLeaderboard();assert.equal(d.querySelector('#results-coming').hidden,true,'published results replace welcome scene');assert.equal(d.querySelector('.ranking-panel').hidden,false);
+
   assert.match(d.querySelector('.rank-row').textContent,/Student 1/,'cumulative leader uses every published week');
   assert.equal(d.querySelector('.rank-row .score-value').textContent,'292');
   assert.equal(d.querySelector('#max').textContent,'300');
