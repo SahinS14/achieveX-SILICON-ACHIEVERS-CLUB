@@ -69,7 +69,7 @@ const $=s=>document.querySelector(s),initials=n=>n.split(' ').map(x=>x[0]).slice
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const formatScore=n=>Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});
 const total=p=>period==='all'?Math.round(p.scores.slice(0,publishedWeek).reduce((a,b)=>a+(b??0),0)*100)/100:(p.scores[Number(period)]??0);
-function avatar(p){const n=p.index%16;return `<span class="avatar-art" style="background-position:${(n%4)*100/3}% ${Math.floor(n/4)*100/3}%" aria-hidden="true"></span>`}
+function avatar(p){const male=[0,2,5,7,8,11,13,15],female=[1,3,4,6,9,10,12,14];const pool=p.avatar_gender==='male'?male:p.avatar_gender==='female'?female:Array.from({length:16},(_,i)=>i);const n=pool[p.index%pool.length];return `<span class="avatar-art" style="background-position:${(n%4)*100/3}% ${Math.floor(n/4)*100/3}%" aria-hidden="true"></span>`}
 function renderBadges(p){
  const list=p.badges||[];
  if(!list.length)return '';
@@ -162,7 +162,7 @@ async function loadLeaderboard(){
   datasets={junior:[],cs:[],core:[]};
   allContenders.forEach((p,index)=>{
    const ord={1:'1st',2:'2nd',3:'3rd',4:'4th'};
-   datasets[p.track].push({name:p.full_name,id:p.sic,year:ord[p.year]+' yr',scores:p.scores,badges:p.badges||[],index});
+   datasets[p.track].push({name:p.full_name,id:p.sic,year:ord[p.year]+' yr',scores:p.scores,badges:p.badges||[],avatar_gender:p.avatar_gender||'neutral',index});
   });
   boardRevision++;
   if(period!=='all'&&Number(period)>=publishedWeek)period='all';

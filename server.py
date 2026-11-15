@@ -398,6 +398,8 @@ def public_results():
             'sic':r['sic'],
             'year':r['year'],
             'track':r['track'],
+            # A presentation hint only; the private gender value itself is never exposed.
+            'avatar_gender':'male' if r.get('gender')=='Male' else 'female' if r.get('gender')=='Female' else 'neutral',
             'scores':[r.get('week'+str(i)) if i<=week else None for i in range(1,6)],
             'total':total(r,week),
             'badges':badges_map.get(r['sic'], [])
