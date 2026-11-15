@@ -58,6 +58,12 @@ class Tests(unittest.TestCase):
         status,data=self.call('/api/leaderboard');self.assertEqual(status,200);r=data['participants'][0]
         self.assertEqual(r['total'],179);self.assertEqual(r['scores'],[88,91,None,None,None])
         for field in ('email','contact','gender'):self.assertNotIn(field,r)
+
+    def test_gender_is_canonical_and_not_swapped(self):
+        male=dict(full_name='Male Student',sic='males123',email='male@silicon.ac.in',contact='9876543210',gender='m',year=3,branch='CSE',track='cs')
+        female=dict(full_name='Female Student',sic='females123',email='female@silicon.ac.in',contact='9876543211',gender='female',year=3,branch='CSE',track='cs')
+        self.assertEqual(app.validate(male)['gender'],'Male')
+        self.assertEqual(app.validate(female)['gender'],'Female')
     def test_csv_preview_atomic_and_update(self):
         self.login();header='Full Name,SIC,Silicon Mail Id,Contact Number,Current Year of Study,Branch,Track,Week 1,Week 2,Week 3,Week 4,Week 5\n'
         valid='Test,24beca53,t@silicon.ac.in,9876543210,3,CSE,cs,90,0,,,\n'

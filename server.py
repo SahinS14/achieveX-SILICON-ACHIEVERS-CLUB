@@ -363,7 +363,11 @@ def validate(raw):
         if required and not v: raise ValidationError(key.replace('_',' ').title()+' is required.')
         if len(v)>maxlen or any(ord(x)<32 for x in v): raise ValidationError('Invalid '+key+'.')
         return v
-    r={'full_name':text('full_name'), 'sic':text('sic').lower(), 'email':text('email').lower(), 'contact':text('contact',maxlen=24), 'gender':text('gender',False,40),'branch':text('branch',maxlen=80)}
+    gender=text('gender',False,40).casefold()
+    gender_aliases={'m':'Male','male':'Male','man':'Male','boy':'Male','f':'Female','female':'Female','woman':'Female','girl':'Female','non-binary':'Non-binary','non binary':'Non-binary','nonbinary':'Non-binary','prefer not to say':'Prefer not to say','prefer not to specify':'Prefer not to say'}
+    if gender not in gender_aliases and gender:
+        raise ValidationError('Choose Male, Female, Non-binary or Prefer not to say.')
+    r={'full_name':text('full_name'), 'sic':text('sic').lower(), 'email':text('email').lower(), 'contact':text('contact',maxlen=24), 'gender':gender_aliases.get(gender,''),'branch':text('branch',maxlen=80)}
     if not re.fullmatch(r'[a-z0-9]{5,24}',r['sic']): raise ValidationError('SIC must contain 5–24 letters or numbers.')
     if not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',r['email']): raise ValidationError('Enter a valid Silicon email address.')
     if not re.fullmatch(r'\+?[0-9 ()-]{7,24}',r['contact']) or not 7<=len(re.sub(r'\D','',r['contact']))<=15: raise ValidationError('Enter a valid contact number.')
