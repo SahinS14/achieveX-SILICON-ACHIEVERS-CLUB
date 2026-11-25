@@ -331,3 +331,9 @@ main:focus,.page h1:focus{outline:none}
 .agenda-date .exam-time{display:block;font:500 13px/1.7 Outfit;color:var(--text);margin:8px 0;white-space:nowrap}
 :root[data-theme=light] .agenda-date .exam-time{color:#3c293f}
 @media(max-width:700px){.agenda-date .exam-time{font-size:13px;white-space:normal;margin:4px 0 0}}
+
+/* Clean podium layout without avatar circles */
+.pod-person{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-height:85px;margin-bottom:16px;position:relative;z-index:2}
+.pod-person .crown{position:static;display:block;transform:none;margin:0 auto 6px;font-size:28px;line-height:1;color:var(--accent,#ffd576);filter:drop-shadow(0 2px 8px rgba(255,200,74,.4));animation:crown-float 3s ease-in-out infinite}
+.pod-entry.first .pod-person h3{font-size:16px;font-weight:600}
+
