@@ -43,7 +43,7 @@ Do not expose this development server publicly. For public deployment, use HTTPS
 
 ## Design assets
 
-Outfit and Plus Jakarta Sans are stored locally with SIL Open Font License notices. Generated avatars illustrate leaderboard profiles, not actual student photos. Faculty/member photographs and confirmed exam dates are awaited. The achievement cutout was generated with the built-in image tool from the supplied illustration. The interface honours reduced motion.
+Outfit and Plus Jakarta Sans are stored locally with SIL Open Font License notices. Faculty/member photographs and confirmed exam dates are awaited. The achievement cutout was generated with the built-in image tool from the supplied illustration. The interface honours reduced motion.
 
 ## Vercel deployment
 
